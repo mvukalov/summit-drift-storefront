@@ -1,7 +1,12 @@
 # Feature Specs
 
-One file per feature: `<kebab-name>-spec.md`. Copy `_spec-template.md` to start.
-Large features are split into phases (`<name>-phase-1-spec.md`, `-phase-2-spec.md`).
+One file per feature: `NNN-<kebab-name>-spec.md`. Copy `_spec-template.md` to start.
+
+- `NNN` is a zero-padded, three-digit sequence number (`001`, `002`, …), assigned when the spec is written: take the next free number.
+- Numbers are never reused or renumbered. A dropped feature keeps its number.
+- Large features are split into phases that share one number (`009-facets-phase-1-spec.md`, `009-facets-phase-2-spec.md`).
+- The number is only for ordering files. Branch names and `/feature load` use the name without it (`feature/ci-pipeline`, `/feature load ci-pipeline`).
+- `context/fixes/` uses the same format with its own sequence.
 
 ## Suggested order
 

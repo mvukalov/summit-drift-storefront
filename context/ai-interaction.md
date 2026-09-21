@@ -17,7 +17,7 @@
 
 ## Workflow (every feature and fix)
 
-1. **Spec** — the feature is described in `context/features/<name>-spec.md` (or `context/fixes/`).
+1. **Spec** — the feature is described in `context/features/NNN-<name>-spec.md` (or `context/fixes/`); see `context/features/README.md` for naming.
 2. **Load** — `/feature load <name>` fills `context/current-feature.md`.
 3. **Branch** — `/feature start` creates `feature/<name>` or `fix/<name>` from an up-to-date `main`.
 4. **Implement** — goal by goal, following the coding standards.

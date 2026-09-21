@@ -1,7 +1,7 @@
 # Load Action
 
 1. Check the argument after "load":
-   - Single word (no spaces): look for `context/features/{name}-spec.md`, then `context/features/{name}.md`, then `context/fixes/{name}.md`.
+   - Single word (no spaces): the name may be given with or without the `NNN-` number prefix. Look for `context/features/NNN-{name}-spec.md` (glob `context/features/[0-9][0-9][0-9]-{name}-spec.md`, or `{name}-spec.md` if the prefix was given), then `context/fixes/NNN-{name}-spec.md`. If more than one file matches, list them and ask which one.
    - Multiple words: treat it as an inline feature description and derive goals from it.
    - Empty: error — "load requires a spec name or a feature description".
 2. If `current-feature.md` already has an active feature (Status is In Progress or In Review), stop and ask before overwriting it.
