@@ -10,6 +10,7 @@ Read these for full project context:
 - @context/coding-standards.md — code conventions and patterns
 - @context/ai-interaction.md — workflow, Git/PR rules, communication
 - @context/current-feature.md — what we are working on right now
+- @AGENTS.md — Next.js version-specific rules; read the bundled docs in `node_modules/next/dist/docs/` before using Next.js APIs
 
 ## Commands
 
