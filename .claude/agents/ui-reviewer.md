@@ -18,12 +18,14 @@ Check each page at **375px**, **768px** and **1280px**.
 ## What to check
 
 ### Layout & visual
+
 - Overlapping, clipped or misaligned elements; horizontal scroll
 - Consistent spacing, typography scale and colors (should come from design tokens; flag visual inconsistencies between similar components)
 - Images: correct aspect ratio, no stretching, no layout shift while loading
 - Loading, empty and error states look intentional
 
 ### Accessibility
+
 - Keyboard: tab through the page; every interactive element is reachable, in a logical order, with a visible focus indicator
 - Cart drawer: focus moves into it, is trapped while open, returns to the trigger on close, Escape closes it
 - Search combobox: arrow keys move through suggestions, Enter selects, Escape closes
@@ -33,6 +35,7 @@ Check each page at **375px**, **768px** and **1280px**.
 - Text contrast looks sufficient (flag suspicious cases for an axe check)
 
 ### Commerce UX
+
 - Price and sale price are clear; the sale badge has text
 - Selected variant is obvious; add-to-cart gives immediate feedback
 - Cart updates feel instant; errors are understandable
