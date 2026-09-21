@@ -72,14 +72,14 @@ Menu `main-menu`: Home + the four collections.
 
 ## 3. Features (MVP)
 
-| #   | Page / feature                         | Key behaviour                                                                                                                 |
-| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Home**                               | Hero, the four collections with images, featured and on-sale products. SSR.                                                   |
-| 2   | **Collection** `/collections/[handle]` | Product grid, sort, facets (see §5.1). Facets and sort live in the URL. SSR.                                                  |
-| 3   | **Product** `/products/[handle]`       | Image gallery, variant picker (§5.2), sale price, sanitized description, recommendations. SSR + SEO metadata.                 |
-| 4   | **Search** `/search?q=`                | Header combobox with predictive suggestions (debounced, keyboard + ARIA). Results page with total count, sort and pagination. |
-| 5   | **Cart drawer**                        | Add, update quantity, remove with optimistic UI and rollback (§5.3). Cart id in a cookie. Link to the mock checkout.          |
-| 6   | **Design system**                      | Atomic components in Storybook, themed with design tokens.                                                                    |
+| #   | Page / feature                         | Key behaviour                                                                                                                                           |
+| --- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Home**                               | Hero, the four collections with images, featured and on-sale products. SSR.                                                                             |
+| 2   | **Collection** `/collections/[handle]` | Product grid, sort, facets (see §5.1). Facets and sort live in the URL. Canonical URL without filter params (§5.5). SSR.                                |
+| 3   | **Product** `/products/[handle]`       | Image gallery, variant picker (§5.2), sale price, sanitized description, recommendations. SSR + SEO metadata + Product structured data (JSON-LD, §5.5). |
+| 4   | **Search** `/search?q=`                | Header combobox with predictive suggestions (debounced, keyboard + ARIA). Results page with total count, sort and pagination.                           |
+| 5   | **Cart drawer**                        | Add, update quantity, remove with optimistic UI and rollback (§5.3). Cart id in a cookie. Link to the mock checkout.                                    |
+| 6   | **Design system**                      | Atomic components in Storybook, themed with design tokens.                                                                                              |
 
 ### Out of scope (→ `new-feature-list.md`)
 
@@ -144,6 +144,12 @@ Product images are 1.4 MB PNGs.
 
 - Plan: `next/image` with `remotePatterns` for `cdn.shopify.com`, correct `sizes`, AVIF/WebP, priority on the LCP image, reserved aspect ratio (768×1344) to avoid CLS.
 - **Measure before/after** (Lighthouse: LCP, total image bytes, CLS) and record the numbers in the README.
+
+### 5.5 SEO: canonical URLs and structured data
+
+- **Canonical URLs.** Facets and sort put many URL variants on one collection (`?color=moss&size=M&sort=price-asc`). Every collection page sets `<link rel="canonical">` to the clean collection URL (via `generateMetadata` → `alternates.canonical`), so filter combinations don't create duplicate content. Search result pages are `noindex`.
+- **Product structured data.** Each PDP renders a JSON-LD `Product` block (schema.org): name, description (plain text), images, SKU, brand, and an `Offer`/`AggregateOffer` with price, `priceCurrency` (USD) and `availability`, built from the same GraphQL data as the page. Collection pages render a `BreadcrumbList`.
+- **Verified**, not assumed: JSON-LD is validated in a unit test (shape) and checked once with Google's Rich Results Test; canonical tags are asserted in an E2E test.
 
 ---
 

@@ -97,6 +97,7 @@ e2e/                       Playwright specs
 ## Security
 
 - `descriptionHtml` and any other HTML from the API is **sanitized** before rendering. `dangerouslySetInnerHTML` is allowed only with sanitized input, in one dedicated component.
+- JSON-LD structured data is rendered by one dedicated `JsonLd` component: `JSON.stringify` output with `<` escaped as `\u003c`, so API text can't close the `<script>` tag.
 - Search params are parsed and validated with Zod before use.
 - No secrets in client code (this project has none; keep it that way).
 
