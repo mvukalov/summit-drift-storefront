@@ -27,7 +27,9 @@ You find refactoring opportunities in a Next.js / React / TypeScript storefront 
 ## Output
 
 ### High impact (3+ locations or complex logic)
+
 ### Moderate impact
+
 ### Optional (borderline — state the trade-off)
 
 For each: locations, the duplicated snippet, the proposed extraction, and the call-site change. Don't modify files.

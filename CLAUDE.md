@@ -19,7 +19,8 @@ Scripts are added by the setup features. Only use scripts that exist in `package
 - **Dev**: `npm run dev` (http://localhost:3000)
 - **Build**: `npm run build`
 - **Lint**: `npm run lint`
-- **Typecheck**: `npm run typecheck`
+- **Typecheck**: `npm run typecheck` (runs `next typegen` first so route types exist on a clean checkout)
+- **Format**: `npm run format`, `npm run format:check`
 - **Unit/component tests**: `npm run test` (single run), `npm run test:watch`, `npm run test:coverage`
 - **E2E**: `npm run test:e2e`
 - **GraphQL types**: `npm run codegen` (run after changing any `.graphql` document)

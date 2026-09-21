@@ -8,8 +8,8 @@
 
 <!-- Concrete, checkable goals. These become Goals in current-feature.md -->
 
-- 
-- 
+-
+-
 
 ## Expected Behavior
 

@@ -18,24 +18,24 @@ The goal is a production-quality frontend: typed GraphQL, a themeable design sys
 
 ## 2. Data Source
 
-| | |
-|---|---|
-| Endpoint | `https://apparel-outdoor.mock.shop/api` (POST, JSON) |
-| Auth | none; send header `X-Shopify-Storefront-Access-Token: public` |
-| Schema | Shopify Storefront API; introspection enabled (426 types) → used by graphql-codegen |
-| Currency | USD |
-| Checkout | mocked (`checkoutUrl` points to a fake checkout) |
+|          |                                                                                     |
+| -------- | ----------------------------------------------------------------------------------- |
+| Endpoint | `https://apparel-outdoor.mock.shop/api` (POST, JSON)                                |
+| Auth     | none; send header `X-Shopify-Storefront-Access-Token: public`                       |
+| Schema   | Shopify Storefront API; introspection enabled (426 types) → used by graphql-codegen |
+| Currency | USD                                                                                 |
+| Checkout | mocked (`checkoutUrl` points to a fake checkout)                                    |
 
 ### Catalog
 
 30 products, 360 variants, 84 variants on sale, 0 unavailable variants.
 
-| Collection handle | Title | Products | Price range (USD) | Option axes |
-|---|---|---|---|---|
-| `summit-protection-shells` | Summit Protection Shells | 8 | 25 – 534 | color (slate/moss/clay) × size (XS–L) |
-| `trail-foundation-layers` | Trail Foundation Layers | 8 | 15 – 64 | size (S–L) × color (charcoal/sand/fern/stone) |
-| `rugged-traverse-bottoms` | Rugged Traverse Bottoms | 8 | 75 – 147 | material (nylon-blend/stretch-canvas/soft-shell) × size (30–36) |
-| `expedition-field-gear` | Expedition Field Gear | 6 | 38 – 285 | finish (matte/weather-resistant/breathable) × size (small–extra-large) |
+| Collection handle          | Title                    | Products | Price range (USD) | Option axes                                                            |
+| -------------------------- | ------------------------ | -------- | ----------------- | ---------------------------------------------------------------------- |
+| `summit-protection-shells` | Summit Protection Shells | 8        | 25 – 534          | color (slate/moss/clay) × size (XS–L)                                  |
+| `trail-foundation-layers`  | Trail Foundation Layers  | 8        | 15 – 64           | size (S–L) × color (charcoal/sand/fern/stone)                          |
+| `rugged-traverse-bottoms`  | Rugged Traverse Bottoms  | 8        | 75 – 147          | material (nylon-blend/stretch-canvas/soft-shell) × size (30–36)        |
+| `expedition-field-gear`    | Expedition Field Gear    | 6        | 38 – 285          | finish (matte/weather-resistant/breathable) × size (small–extra-large) |
 
 Menu `main-menu`: Home + the four collections.
 
@@ -52,34 +52,34 @@ Menu `main-menu`: Home + the four collections.
 
 ### API capabilities (tested)
 
-| Capability | Status | Notes |
-|---|---|---|
-| Products, collections, product by handle | ✅ | |
-| Cursor pagination (forward/back) | ✅ | `first/after`, `last/before` |
-| Collection sort | ✅ | `PRICE`, `BEST_SELLING`, `CREATED`, `reverse` |
-| Search | ✅ | `search(query, types: PRODUCT)` with `totalCount`, sort, pagination |
-| Predictive search | ✅ | `predictiveSearch(query, limit)` |
-| Recommendations | ✅ | `productRecommendations(productId)` |
-| Menu, SEO fields | ✅ | `menu(handle)`, `seo { title description }` |
-| Cart | ✅ | `cartCreate`, `cartLinesAdd/Update/Remove`, `cart(id)`; cart persists server-side |
-| Cart errors | ✅ | invalid merchandise → `userErrors` with code `INVALID_MERCHANDISE_LINE` |
-| Discount codes | ⚠️ | accepted but always `applicable: false` |
-| **Server-side filters** | ❌ | `filters:` input and `query:` syntax are ignored; `productFilters` is empty |
-| Localization | ❌ | single market and language |
-| Customer accounts | ❌ | not available on mock.shop |
+| Capability                               | Status | Notes                                                                             |
+| ---------------------------------------- | ------ | --------------------------------------------------------------------------------- |
+| Products, collections, product by handle | ✅     |                                                                                   |
+| Cursor pagination (forward/back)         | ✅     | `first/after`, `last/before`                                                      |
+| Collection sort                          | ✅     | `PRICE`, `BEST_SELLING`, `CREATED`, `reverse`                                     |
+| Search                                   | ✅     | `search(query, types: PRODUCT)` with `totalCount`, sort, pagination               |
+| Predictive search                        | ✅     | `predictiveSearch(query, limit)`                                                  |
+| Recommendations                          | ✅     | `productRecommendations(productId)`                                               |
+| Menu, SEO fields                         | ✅     | `menu(handle)`, `seo { title description }`                                       |
+| Cart                                     | ✅     | `cartCreate`, `cartLinesAdd/Update/Remove`, `cart(id)`; cart persists server-side |
+| Cart errors                              | ✅     | invalid merchandise → `userErrors` with code `INVALID_MERCHANDISE_LINE`           |
+| Discount codes                           | ⚠️     | accepted but always `applicable: false`                                           |
+| **Server-side filters**                  | ❌     | `filters:` input and `query:` syntax are ignored; `productFilters` is empty       |
+| Localization                             | ❌     | single market and language                                                        |
+| Customer accounts                        | ❌     | not available on mock.shop                                                        |
 
 ---
 
 ## 3. Features (MVP)
 
-| # | Page / feature | Key behaviour |
-|---|---|---|
-| 1 | **Home** | Hero, the four collections with images, featured and on-sale products. SSR. |
-| 2 | **Collection** `/collections/[handle]` | Product grid, sort, facets (see §5.1). Facets and sort live in the URL. SSR. |
-| 3 | **Product** `/products/[handle]` | Image gallery, variant picker (§5.2), sale price, sanitized description, recommendations. SSR + SEO metadata. |
-| 4 | **Search** `/search?q=` | Header combobox with predictive suggestions (debounced, keyboard + ARIA). Results page with total count, sort and pagination. |
-| 5 | **Cart drawer** | Add, update quantity, remove with optimistic UI and rollback (§5.3). Cart id in a cookie. Link to the mock checkout. |
-| 6 | **Design system** | Atomic components in Storybook, themed with design tokens. |
+| #   | Page / feature                         | Key behaviour                                                                                                                 |
+| --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Home**                               | Hero, the four collections with images, featured and on-sale products. SSR.                                                   |
+| 2   | **Collection** `/collections/[handle]` | Product grid, sort, facets (see §5.1). Facets and sort live in the URL. SSR.                                                  |
+| 3   | **Product** `/products/[handle]`       | Image gallery, variant picker (§5.2), sale price, sanitized description, recommendations. SSR + SEO metadata.                 |
+| 4   | **Search** `/search?q=`                | Header combobox with predictive suggestions (debounced, keyboard + ARIA). Results page with total count, sort and pagination. |
+| 5   | **Cart drawer**                        | Add, update quantity, remove with optimistic UI and rollback (§5.3). Cart id in a cookie. Link to the mock checkout.          |
+| 6   | **Design system**                      | Atomic components in Storybook, themed with design tokens.                                                                    |
 
 ### Out of scope (→ `new-feature-list.md`)
 
@@ -89,22 +89,22 @@ Customer accounts, real checkout, wishlist, i18n and multi-currency, blog/CMS pa
 
 ## 4. Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16 (App Router, React Server Components) |
-| Language | TypeScript, `strict`, no `any` |
-| UI | React 19 |
-| Styling | SCSS Modules + design tokens as CSS custom properties. No Tailwind. |
-| Components | Atomic structure (atoms → molecules → organisms), documented in Storybook |
-| Data | GraphQL: Apollo Client via the official Next.js App Router integration; graphql-codegen (client preset) for typed documents |
-| Validation | Zod (URL search params, env) |
-| Sanitization | DOMPurify-compatible sanitizer for `descriptionHtml` |
-| Unit / component tests | Vitest + React Testing Library |
-| E2E | Playwright + @axe-core/playwright |
-| Performance | Lighthouse CI with budgets |
-| CI | GitHub Actions |
-| Container | Dockerfile for production build |
-| Deploy | Vercel (app) + Storybook (static deploy) |
+| Layer                  | Choice                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Framework              | Next.js 16 (App Router, React Server Components)                                                                            |
+| Language               | TypeScript, `strict`, no `any`                                                                                              |
+| UI                     | React 19                                                                                                                    |
+| Styling                | SCSS Modules + design tokens as CSS custom properties. No Tailwind.                                                         |
+| Components             | Atomic structure (atoms → molecules → organisms), documented in Storybook                                                   |
+| Data                   | GraphQL: Apollo Client via the official Next.js App Router integration; graphql-codegen (client preset) for typed documents |
+| Validation             | Zod (URL search params, env)                                                                                                |
+| Sanitization           | DOMPurify-compatible sanitizer for `descriptionHtml`                                                                        |
+| Unit / component tests | Vitest + React Testing Library                                                                                              |
+| E2E                    | Playwright + @axe-core/playwright                                                                                           |
+| Performance            | Lighthouse CI with budgets                                                                                                  |
+| CI                     | GitHub Actions                                                                                                              |
+| Container              | Dockerfile for production build                                                                                             |
+| Deploy                 | Vercel (app) + Storybook (static deploy)                                                                                    |
 
 > Library versions and the exact Apollo ↔ App Router setup are confirmed via Context7 at bootstrap. Don't assume APIs from memory.
 

@@ -17,11 +17,13 @@ You audit a Next.js 16 / React 19 / TypeScript storefront that uses Apollo Clien
 ## What to look for
 
 ### Security
+
 - HTML from the API rendered without sanitization; `dangerouslySetInnerHTML` outside the dedicated component
 - Search params used without Zod validation
 - Internal error details shown to users
 
 ### Performance
+
 - `'use client'` higher in the tree than necessary; large client bundles
 - `<img>` instead of `next/image`; missing `sizes`; missing `priority` on the LCP image; no reserved aspect ratio (CLS)
 - Data fetched in client components that could be fetched in Server Components; duplicate fetches (RSC + client)
@@ -29,12 +31,14 @@ You audit a Next.js 16 / React 19 / TypeScript storefront that uses Apollo Clien
 - Unnecessary re-renders (unstable props/callbacks in large lists)
 
 ### Accessibility
+
 - Interactive elements that aren't buttons/links; missing labels or accessible names
 - Missing visible focus styles; keyboard traps
 - Color as the only signal
 - Combobox, dialog (cart drawer) and radio-group (variant picker) patterns not following WAI-ARIA practices
 
 ### Code quality
+
 - `any`, unexplained `@ts-expect-error`, hand-written GraphQL response types
 - Hard-coded colors/spacing in SCSS instead of tokens; inline styles
 - Business logic inside components instead of `src/lib/`
@@ -57,8 +61,11 @@ You audit a Next.js 16 / React 19 / TypeScript storefront that uses Apollo Clien
 Group findings by severity; omit empty groups.
 
 ### Critical
+
 ### High
+
 ### Medium
+
 ### Low
 
 For each finding:
