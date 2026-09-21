@@ -7,7 +7,7 @@ Large features are split into phases (`<name>-phase-1-spec.md`, `-phase-2-spec.m
 
 Specs are written one at a time, right before the feature starts.
 
-1. **project-setup** — bootstrap check, scripts, ESLint/Prettier, strict TS, folder structure
+1. **initial-setup** — bootstrap check, scripts, ESLint/Prettier, strict TS, folder structure
 2. **ci-pipeline** — GitHub Actions: lint, typecheck, test; branch protection
 3. **graphql-layer** — codegen, Apollo clients (RSC + client), fragments, first query
 4. **design-tokens** — tokens.scss, globals, breakpoints, Storybook setup

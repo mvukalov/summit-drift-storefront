@@ -1,4 +1,4 @@
-# Project Setup Spec
+# Initial Setup Spec
 
 ## Overview
 
@@ -45,7 +45,7 @@ Turn the fresh `create-next-app` scaffold into the project's foundation: clean b
 - Before touching Next.js config, fonts, metadata or file conventions, read the relevant guide in `node_modules/next/dist/docs/` (see `AGENTS.md`). This is Next.js 16.3.x.
 - Check current setup docs for Vitest + React Testing Library with Next.js App Router via Context7. Note any limitations (e.g. async Server Components) in the Notes of `current-feature.md`.
 - Server Components by default; the page stays a Server Component.
-- Commit in small conventional commits on `feature/project-setup` (e.g. `chore: remove boilerplate`, `build: add sass and prettier`, `test: set up vitest and rtl`).
+- Commit in small conventional commits on `feature/initial-setup` (e.g. `chore: remove boilerplate`, `build: add sass and prettier`, `test: set up vitest and rtl`).
 
 ## UI
 
