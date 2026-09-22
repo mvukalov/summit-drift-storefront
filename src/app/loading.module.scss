@@ -1,0 +1,41 @@
+%block {
+  background-color: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.line {
+  @extend %block;
+
+  width: 100%;
+  height: var(--space-4);
+}
+
+.lineShort {
+  @extend %block;
+
+  width: 30%;
+  height: var(--space-3);
+}
+
+.lineHeading {
+  @extend %block;
+
+  width: 70%;
+  height: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.frame {
+  @extend %block;
+
+  aspect-ratio: var(--ratio-product-image);
+  border-radius: var(--radius-lg);
+}
+
+// Stopped by the global prefers-reduced-motion rule.
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
