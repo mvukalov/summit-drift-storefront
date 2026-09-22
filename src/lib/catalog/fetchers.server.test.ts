@@ -75,6 +75,56 @@ describe("getCollection", () => {
     await expect(getCollection("does-not-exist")).resolves.toBeNull();
   });
 
+  // Sorting is the API's job (sortKey/reverse), not a client-side re-sort of the fetched
+  // array, so what matters is which variables leave the client.
+  describe("sort variables", () => {
+    function captureVariables() {
+      const sent: Record<string, unknown>[] = [];
+      server.use(
+        shop.query(CollectionByHandleDocument, ({ variables }) => {
+          sent.push(variables);
+          return HttpResponse.json({ data: collectionByHandleFixture });
+        }),
+      );
+      return sent;
+    }
+
+    it.each([
+      ["featured", "COLLECTION_DEFAULT", false],
+      ["price-asc", "PRICE", false],
+      ["price-desc", "PRICE", true],
+      ["best-selling", "BEST_SELLING", false],
+    ] as const)("sends %s as %s/reverse=%s", async (sort, sortKey, reverse) => {
+      const sent = captureVariables();
+
+      await getCollection("summit-protection-shells", sort);
+
+      expect(sent).toHaveLength(1);
+      expect(sent[0]).toMatchObject({
+        handle: "summit-protection-shells",
+        sortKey,
+        reverse,
+      });
+    });
+
+    it("defaults to the collection's own order when no sort is given", async () => {
+      const sent = captureVariables();
+
+      await getCollection("summit-protection-shells");
+
+      expect(sent[0]).toMatchObject({ sortKey: "COLLECTION_DEFAULT", reverse: false });
+    });
+
+    it("keeps fetching the whole collection in one page", async () => {
+      const sent = captureVariables();
+
+      await getCollection("summit-protection-shells", "price-asc");
+
+      // `first: 250` is a literal in the document, so it must not appear as a variable.
+      expect(sent[0]).not.toHaveProperty("first");
+    });
+  });
+
   it("rejects on GraphQL errors instead of returning null", async () => {
     server.use(
       shop.query(CollectionByHandleDocument, () =>

@@ -1,0 +1,58 @@
+@use "../../../styles/breakpoints" as *;
+
+// Page gutters match the header, footer and Home.
+.page {
+  padding-block: var(--space-5) var(--space-6);
+  padding-inline: var(--space-3);
+
+  @include bp(md) {
+    padding-inline: var(--space-4);
+  }
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 45rem;
+}
+
+.description {
+  color: var(--color-text-muted);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--space-4);
+  margin-block: var(--space-4);
+  border-block: 1px solid var(--color-divider);
+}
+
+.count {
+  font-size: var(--text-small-size);
+  color: var(--color-text-muted);
+}
+
+.empty {
+  padding-block: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+// 2 columns → 4 from md; keep GRID_IMAGE_SIZES in sync.
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-3);
+  padding: 0;
+  list-style: none;
+
+  @include bp(md) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-4);
+  }
+}

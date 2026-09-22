@@ -8,10 +8,10 @@ query Collections {
 
 # Fetches the whole collection in one request: the API ignores filters,
 # so facets are computed from these products (project overview §5.1).
-query CollectionByHandle($handle: String!) {
+query CollectionByHandle($handle: String!, $sortKey: ProductCollectionSortKeys, $reverse: Boolean) {
   collection(handle: $handle) {
     ...CollectionSummary
-    products(first: 250) {
+    products(first: 250, sortKey: $sortKey, reverse: $reverse) {
       nodes {
         ...ProductCard
       }
