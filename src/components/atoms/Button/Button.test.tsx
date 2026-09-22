@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { Button } from "./Button";
 
@@ -54,6 +55,16 @@ describe("Button", () => {
     expect(button).toBeDisabled();
     expect(screen.getByRole("status")).toHaveTextContent("Loading");
     expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it("passes a ref to the native button so callers can move focus to it", () => {
+    const ref = createRef<HTMLButtonElement>();
+    render(<Button ref={ref}>Menu</Button>);
+
+    ref.current?.focus();
+
+    expect(ref.current).toBe(screen.getByRole("button", { name: "Menu" }));
+    expect(ref.current).toHaveFocus();
   });
 
   it("is not busy when not loading", () => {

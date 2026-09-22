@@ -84,6 +84,7 @@ describe("design tokens", () => {
     ["--color-text-muted", "--color-background"],
     ["--color-text-muted", "--color-surface"],
     ["--color-text-inverse", "--color-surface-inverse"],
+    ["--color-text-inverse-muted", "--color-surface-inverse"],
     ["--color-on-primary", "--color-primary"],
     ["--color-on-primary", "--color-primary-hover"],
     ["--color-accent", "--color-background"],
@@ -97,5 +98,8 @@ describe("design tokens", () => {
   it("keeps the focus ring at 3:1 against page surfaces (WCAG 1.4.11)", () => {
     expect(contrast("--color-focus-ring", "--color-background")).toBeGreaterThanOrEqual(3);
     expect(contrast("--color-focus-ring", "--color-surface")).toBeGreaterThanOrEqual(3);
+    expect(
+      contrast("--color-focus-ring-inverse", "--color-surface-inverse"),
+    ).toBeGreaterThanOrEqual(3);
   });
 });

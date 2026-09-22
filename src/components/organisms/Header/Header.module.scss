@@ -1,0 +1,109 @@
+@use "../../../styles/breakpoints" as *;
+
+// Off-screen until focused, then shown above the header.
+.skipLink {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-3);
+  z-index: var(--z-overlay);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+  border-radius: var(--radius-md);
+
+  &:not(:focus) {
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.header {
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.inner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+
+  @include bp(md) {
+    padding-inline: var(--space-4);
+  }
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: var(--size-touch-target);
+  margin-right: auto;
+  text-decoration: none;
+}
+
+.wordmark {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+
+  @include bp(lg) {
+    font-size: var(--font-size-xl);
+  }
+}
+
+.tagline {
+  font-size: var(--text-eyebrow-size);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+// Mobile uses the MobileNav panel instead.
+.nav {
+  display: none;
+
+  @include bp(lg) {
+    display: block;
+  }
+}
+
+.navList {
+  display: flex;
+  gap: var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch-target);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+// Square icon button; the Button atom supplies height, focus and hover.
+.iconButton {
+  width: var(--size-touch-target);
+  padding: 0;
+}

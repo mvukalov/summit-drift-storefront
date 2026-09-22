@@ -1,10 +1,12 @@
 import type {
   CollectionSummaryFragment,
   ImageFragment,
+  MenuItemFragment,
   MoneyFragment,
   ProductCardFragment,
 } from "@/lib/graphql/generated/graphql";
 import type { CollectionSummary, Image, Money, ProductCard } from "@/types/catalog";
+import type { MenuItem } from "@/types/navigation";
 
 // Fields are copied explicitly so GraphQL's `__typename` never reaches domain objects.
 function toMoney(money: MoneyFragment): Money {
@@ -53,4 +55,11 @@ export function toProductCard(product: ProductCardFragment): ProductCard {
     compareAtPrice,
     isOnSale,
   };
+}
+
+// Menu URLs point at the hosted demo storefront (https://….mock.shop/collections/<handle>);
+// only the path is kept so links stay on this site. Items without a URL can't be linked.
+export function toMenuItem(item: MenuItemFragment): MenuItem | null {
+  if (!item.url) return null;
+  return { title: item.title, href: new URL(item.url).pathname };
 }

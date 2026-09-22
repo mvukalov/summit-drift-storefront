@@ -17,7 +17,10 @@ html {
   text-size-adjust: 100%;
 }
 
+// Column layout keeps the footer at the bottom of short pages.
 body {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   font-family: var(--font-body);
   font-size: var(--text-body-size);
@@ -89,6 +92,15 @@ a {
 :focus-visible {
   outline: var(--focus-ring-width) solid var(--color-focus-ring);
   outline-offset: var(--focus-ring-offset);
+}
+
+main {
+  flex: 1 0 auto;
+
+  // Focused by the skip link; a ring around the whole content area helps no one.
+  &[tabindex="-1"]:focus {
+    outline: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

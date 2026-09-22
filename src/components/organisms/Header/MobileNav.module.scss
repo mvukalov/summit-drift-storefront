@@ -1,0 +1,91 @@
+@use "../../../styles/breakpoints" as *;
+
+// Square icon button; the Button atom supplies height, focus and hover.
+.trigger {
+  width: var(--size-touch-target);
+  padding: 0;
+
+  // Desktop shows the inline nav instead.
+  @include bp(lg) {
+    display: none;
+  }
+}
+
+.panel {
+  // Leaves a strip of backdrop visible on phones as a tap-to-close area.
+  width: min(100% - var(--space-6), 24rem);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0;
+  margin: 0 0 0 auto;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 0;
+  box-shadow: var(--shadow-lg);
+
+  // The global reduced-motion rule shortens this animation to an instant change.
+  &[open] {
+    animation: slideIn 200ms ease-out;
+  }
+
+  &::backdrop {
+    background-color: color-mix(in srgb, var(--color-surface-inverse) 50%, transparent);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Fills the dialog so only backdrop clicks target the <dialog> element itself.
+.content {
+  min-height: 100%;
+  padding: var(--space-4);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.title {
+  font-size: var(--text-h3-size);
+}
+
+.close {
+  width: var(--size-touch-target);
+  padding: 0;
+}
+
+.list {
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-divider);
+
+  li {
+    border-bottom: 1px solid var(--color-divider);
+  }
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  min-height: var(--size-touch-target);
+  padding-block: var(--space-3);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

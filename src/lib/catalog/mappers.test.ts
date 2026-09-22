@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { ProductCardFragment } from "@/lib/graphql/generated/graphql";
 import { collectionByHandleFixture } from "@/test/msw/fixtures/collectionByHandle";
 import { collectionsFixture } from "@/test/msw/fixtures/collections";
-import { toCollectionSummary, toProductCard } from "./mappers";
+import { mainMenuFixture } from "@/test/msw/fixtures/mainMenu";
+import { toCollectionSummary, toMenuItem, toProductCard } from "./mappers";
 
 const products = collectionByHandleFixture.collection.products.nodes;
 
@@ -98,5 +99,32 @@ describe("toProductCard", () => {
     const card = toProductCard({ ...productByHandle("oversized-t-shirt"), featuredImage: null });
 
     expect(card.image).toBeNull();
+  });
+});
+
+describe("toMenuItem", () => {
+  const [home, shells] = mainMenuFixture.menu.items;
+  if (!home || !shells) throw new Error("Fixture has too few menu items");
+
+  it("turns the absolute storefront URL into a site-relative path", () => {
+    // toStrictEqual: GraphQL's __typename and the item type must not leak into domain objects.
+    expect(toMenuItem(shells)).toStrictEqual({
+      title: "Summit Protection Shells",
+      href: "/collections/summit-protection-shells",
+    });
+  });
+
+  it("maps the storefront root to /", () => {
+    expect(toMenuItem(home)?.href).toBe("/");
+  });
+
+  it("drops the query string and fragment", () => {
+    expect(toMenuItem({ ...shells, url: `${shells.url}?sort=price#grid` })?.href).toBe(
+      "/collections/summit-protection-shells",
+    );
+  });
+
+  it("returns null for an item without a URL", () => {
+    expect(toMenuItem({ ...shells, url: null })).toBeNull();
   });
 });

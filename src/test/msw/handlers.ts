@@ -1,8 +1,13 @@
 import { graphql, HttpResponse } from "msw";
-import { CollectionByHandleDocument, CollectionsDocument } from "@/lib/graphql/generated/graphql";
+import {
+  CollectionByHandleDocument,
+  CollectionsDocument,
+  MainMenuDocument,
+} from "@/lib/graphql/generated/graphql";
 import { SHOPIFY_API_URL } from "@/lib/graphql/config";
 import { collectionByHandleFixture, unknownCollectionFixture } from "./fixtures/collectionByHandle";
 import { collectionsFixture } from "./fixtures/collections";
+import { mainMenuFixture } from "./fixtures/mainMenu";
 
 export const shop = graphql.link(SHOPIFY_API_URL);
 
@@ -16,4 +21,5 @@ export const handlers = [
           : unknownCollectionFixture,
     }),
   ),
+  shop.query(MainMenuDocument, () => HttpResponse.json({ data: mainMenuFixture })),
 ];

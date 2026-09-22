@@ -1,0 +1,15 @@
+# Items carry an absolute storefront `url` and `resource: null` on mock.shop,
+# so the route is derived from the URL path (see toMenuItem).
+fragment MenuItem on MenuItem {
+  title
+  type
+  url
+}
+
+query MainMenu {
+  menu(handle: "main-menu") {
+    items {
+      ...MenuItem
+    }
+  }
+}
