@@ -5,13 +5,13 @@ export default async function Home() {
   const collections = await getCollections();
 
   return (
-    <main>
+    <>
       <h1>Summit Drift Outfitters</h1>
       <ul>
         {collections.map((collection) => (
           <li key={collection.handle}>{collection.title}</li>
         ))}
       </ul>
-    </main>
+    </>
   );
 }

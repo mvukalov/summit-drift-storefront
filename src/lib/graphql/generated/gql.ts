@@ -16,10 +16,12 @@ import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-
 type Documents = {
     "query Collections {\n  collections(first: 250) {\n    nodes {\n      ...CollectionSummary\n    }\n  }\n}\n\nquery CollectionByHandle($handle: String!) {\n  collection(handle: $handle) {\n    ...CollectionSummary\n    products(first: 250) {\n      nodes {\n        ...ProductCard\n      }\n    }\n  }\n}": typeof types.CollectionsDocument,
     "fragment Money on MoneyV2 {\n  amount\n  currencyCode\n}\n\nfragment Image on Image {\n  url\n  altText\n  width\n  height\n}\n\nfragment CollectionSummary on Collection {\n  handle\n  title\n  description\n  image {\n    ...Image\n  }\n}\n\nfragment ProductCard on Product {\n  handle\n  title\n  featuredImage {\n    ...Image\n  }\n  priceRange {\n    minVariantPrice {\n      ...Money\n    }\n  }\n  compareAtPriceRange {\n    minVariantPrice {\n      ...Money\n    }\n    maxVariantPrice {\n      ...Money\n    }\n  }\n}": typeof types.MoneyFragmentDoc,
+    "fragment MenuItem on MenuItem {\n  title\n  type\n  url\n}\n\nquery MainMenu {\n  menu(handle: \"main-menu\") {\n    items {\n      ...MenuItem\n    }\n  }\n}": typeof types.MenuItemFragmentDoc,
 };
 const documents: Documents = {
     "query Collections {\n  collections(first: 250) {\n    nodes {\n      ...CollectionSummary\n    }\n  }\n}\n\nquery CollectionByHandle($handle: String!) {\n  collection(handle: $handle) {\n    ...CollectionSummary\n    products(first: 250) {\n      nodes {\n        ...ProductCard\n      }\n    }\n  }\n}": types.CollectionsDocument,
     "fragment Money on MoneyV2 {\n  amount\n  currencyCode\n}\n\nfragment Image on Image {\n  url\n  altText\n  width\n  height\n}\n\nfragment CollectionSummary on Collection {\n  handle\n  title\n  description\n  image {\n    ...Image\n  }\n}\n\nfragment ProductCard on Product {\n  handle\n  title\n  featuredImage {\n    ...Image\n  }\n  priceRange {\n    minVariantPrice {\n      ...Money\n    }\n  }\n  compareAtPriceRange {\n    minVariantPrice {\n      ...Money\n    }\n    maxVariantPrice {\n      ...Money\n    }\n  }\n}": types.MoneyFragmentDoc,
+    "fragment MenuItem on MenuItem {\n  title\n  type\n  url\n}\n\nquery MainMenu {\n  menu(handle: \"main-menu\") {\n    items {\n      ...MenuItem\n    }\n  }\n}": types.MenuItemFragmentDoc,
 };
 
 /**
@@ -44,6 +46,10 @@ export function graphql(source: "query Collections {\n  collections(first: 250) 
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "fragment Money on MoneyV2 {\n  amount\n  currencyCode\n}\n\nfragment Image on Image {\n  url\n  altText\n  width\n  height\n}\n\nfragment CollectionSummary on Collection {\n  handle\n  title\n  description\n  image {\n    ...Image\n  }\n}\n\nfragment ProductCard on Product {\n  handle\n  title\n  featuredImage {\n    ...Image\n  }\n  priceRange {\n    minVariantPrice {\n      ...Money\n    }\n  }\n  compareAtPriceRange {\n    minVariantPrice {\n      ...Money\n    }\n    maxVariantPrice {\n      ...Money\n    }\n  }\n}"): (typeof documents)["fragment Money on MoneyV2 {\n  amount\n  currencyCode\n}\n\nfragment Image on Image {\n  url\n  altText\n  width\n  height\n}\n\nfragment CollectionSummary on Collection {\n  handle\n  title\n  description\n  image {\n    ...Image\n  }\n}\n\nfragment ProductCard on Product {\n  handle\n  title\n  featuredImage {\n    ...Image\n  }\n  priceRange {\n    minVariantPrice {\n      ...Money\n    }\n  }\n  compareAtPriceRange {\n    minVariantPrice {\n      ...Money\n    }\n    maxVariantPrice {\n      ...Money\n    }\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment MenuItem on MenuItem {\n  title\n  type\n  url\n}\n\nquery MainMenu {\n  menu(handle: \"main-menu\") {\n    items {\n      ...MenuItem\n    }\n  }\n}"): (typeof documents)["fragment MenuItem on MenuItem {\n  title\n  type\n  url\n}\n\nquery MainMenu {\n  menu(handle: \"main-menu\") {\n    items {\n      ...MenuItem\n    }\n  }\n}"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

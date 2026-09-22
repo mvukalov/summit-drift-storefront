@@ -1,0 +1,63 @@
+@use "../../../styles/breakpoints" as *;
+
+.footer {
+  color: var(--color-text-inverse);
+  background-color: var(--color-surface-inverse);
+}
+
+.inner {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-3);
+
+  @include bp(md) {
+    grid-template-columns: 1fr 1fr;
+    padding-inline: var(--space-4);
+  }
+}
+
+.wordmark {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.blurb {
+  max-width: 22rem;
+  font-size: var(--text-small-size);
+  color: var(--color-text-inverse-muted);
+}
+
+.heading {
+  margin-bottom: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-eyebrow-size);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-inverse-muted);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.list {
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-touch-target);
+  font-size: var(--text-small-size);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  // The global ring is slate, invisible on the slate footer.
+  &:focus-visible {
+    outline-color: var(--color-focus-ring-inverse);
+  }
+}

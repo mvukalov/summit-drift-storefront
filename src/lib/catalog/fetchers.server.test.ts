@@ -1,10 +1,15 @@
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
-import { CollectionByHandleDocument, CollectionsDocument } from "@/lib/graphql/generated/graphql";
+import {
+  CollectionByHandleDocument,
+  CollectionsDocument,
+  MainMenuDocument,
+} from "@/lib/graphql/generated/graphql";
 import { collectionByHandleFixture } from "@/test/msw/fixtures/collectionByHandle";
+import { mainMenuFixture } from "@/test/msw/fixtures/mainMenu";
 import { server } from "@/test/msw/server";
 import { shop } from "@/test/msw/handlers";
-import { getCollection, getCollections } from "./fetchers";
+import { getCollection, getCollections, getMainMenu } from "./fetchers";
 
 describe("getCollections", () => {
   it("returns every collection as a CollectionSummary", async () => {
@@ -82,5 +87,61 @@ describe("getCollection", () => {
     server.use(shop.query(CollectionByHandleDocument, () => HttpResponse.error()));
 
     await expect(getCollection("summit-protection-shells")).rejects.toThrow();
+  });
+});
+
+describe("getMainMenu", () => {
+  it("returns the collection links as site-relative menu items, without Home", async () => {
+    const items = await getMainMenu();
+
+    expect(items).toEqual([
+      { title: "Summit Protection Shells", href: "/collections/summit-protection-shells" },
+      { title: "Trail Foundation Layers", href: "/collections/trail-foundation-layers" },
+      { title: "Rugged Traverse Bottoms", href: "/collections/rugged-traverse-bottoms" },
+      { title: "Expedition Field Gear", href: "/collections/expedition-field-gear" },
+    ]);
+  });
+
+  it("skips items without a URL", async () => {
+    const { menu } = mainMenuFixture;
+    server.use(
+      shop.query(MainMenuDocument, () =>
+        HttpResponse.json({
+          data: {
+            menu: {
+              ...menu,
+              items: menu.items.map((item, i) => (i === 1 ? { ...item, url: null } : item)),
+            },
+          },
+        }),
+      ),
+    );
+
+    const items = await getMainMenu();
+
+    expect(items.map((item) => item.title)).not.toContain("Summit Protection Shells");
+    expect(items).toHaveLength(3);
+  });
+
+  it("returns an empty list when the menu does not exist", async () => {
+    server.use(shop.query(MainMenuDocument, () => HttpResponse.json({ data: { menu: null } })));
+
+    await expect(getMainMenu()).resolves.toEqual([]);
+  });
+
+  it("rejects on GraphQL errors", async () => {
+    server.use(
+      shop.query(MainMenuDocument, () =>
+        HttpResponse.json({ errors: [{ message: "Internal error" }] }),
+      ),
+    );
+
+    await expect(getMainMenu()).rejects.toThrow("Internal error");
+  });
+
+  it("rejects on network errors", async () => {
+    server.use(shop.query(MainMenuDocument, () => HttpResponse.error()));
+
+    await expect(getMainMenu()).rejects.toThrow();
   });
 });

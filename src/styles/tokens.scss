@@ -89,6 +89,7 @@
   --color-text: var(--color-slate);
   --color-text-muted: var(--color-slate-soft);
   --color-text-inverse: var(--color-soft-cream);
+  --color-text-inverse-muted: var(--color-sand);
 
   --color-border: var(--color-sand);
   --color-border-strong: var(--color-sand-dark);
@@ -108,6 +109,7 @@
   --color-disabled-text: var(--color-stone-text);
 
   --color-focus-ring: var(--color-slate);
+  --color-focus-ring-inverse: var(--color-soft-cream); // on --color-surface-inverse
 
   // ---------------------------------------------------------------------------
   // Semantic: typography

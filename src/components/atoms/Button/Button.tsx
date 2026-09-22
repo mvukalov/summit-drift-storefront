@@ -1,11 +1,11 @@
 import clsx from "clsx";
-import type { ButtonHTMLAttributes } from "react";
+import type { ComponentPropsWithRef } from "react";
 import { Spinner } from "../Spinner/Spinner";
 import styles from "./Button.module.scss";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends ComponentPropsWithRef<"button"> {
   variant?: ButtonVariant;
   /** Shows a spinner, sets `aria-busy` and blocks interaction until the action settles. */
   loading?: boolean;
