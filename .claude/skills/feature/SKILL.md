@@ -1,7 +1,7 @@
 ---
 name: feature
 description: Manage the current feature lifecycle - load a spec, start a branch, test, review, explain, or complete via pull request
-argument-hint: load <spec>|start|test|review|explain|complete
+argument-hint: load <spec>|start|test|review|explain|export|complete
 ---
 
 # Feature Workflow
@@ -31,6 +31,7 @@ Execute the requested action: $ARGUMENTS
 | `test`     | Write and run unit, component and E2E tests for the feature         |
 | `review`   | Check goals, quality, scope and tests against `git diff main`       |
 | `explain`  | Explain what changed and how it fits together                       |
+| `export`   | Write a private learning doc to `process-notes/` (never committed)  |
 | `complete` | Commit, push, open a PR, merge after approval, clean up             |
 
 See [actions/](actions/) for detailed instructions.
