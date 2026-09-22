@@ -40,7 +40,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/lib/graphql/generated/**"],
+      exclude: [
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.stories.tsx",
+        "src/test/**",
+        "src/lib/graphql/generated/**",
+      ],
       thresholds: {
         "src/lib/**": {
           lines: 80,

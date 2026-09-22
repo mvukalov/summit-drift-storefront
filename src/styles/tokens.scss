@@ -95,6 +95,7 @@
   --color-divider: var(--color-sand-dark);
 
   --color-primary: var(--color-slate);
+  --color-primary-hover: var(--color-slate-soft);
   --color-on-primary: var(--color-soft-cream);
   --color-accent: var(--color-clay-dark);
   --color-on-accent: var(--color-soft-cream);
@@ -121,6 +122,11 @@
   --text-small-size: var(--font-size-sm);
   --text-eyebrow-size: var(--font-size-xs);
   --text-price-size: var(--font-size-lg);
+
+  // ---------------------------------------------------------------------------
+  // Semantic: sizing
+  // ---------------------------------------------------------------------------
+  --size-touch-target: 2.75rem; // 44px: minimum height of interactive controls
 
   // ---------------------------------------------------------------------------
   // Semantic: focus
