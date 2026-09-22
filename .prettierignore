@@ -7,3 +7,4 @@ package-lock.json
 process-notes
 schema.graphql
 src/lib/graphql/generated
+storybook-static

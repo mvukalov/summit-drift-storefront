@@ -49,3 +49,7 @@ next-env.d.ts
 # local tool output (never committed)
 /Claude outputs/
 /.playwright-mcp/
+
+# storybook build output
+/storybook-static/
+*storybook.log
