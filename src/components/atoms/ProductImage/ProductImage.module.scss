@@ -1,0 +1,11 @@
+.frame {
+  position: relative;
+  aspect-ratio: var(--ratio-product-image);
+  overflow: hidden;
+  background-color: var(--color-surface-muted); // placeholder while the image loads
+  border-radius: var(--radius-lg);
+}
+
+.image {
+  object-fit: cover;
+}

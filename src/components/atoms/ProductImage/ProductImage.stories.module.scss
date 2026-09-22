@@ -1,0 +1,4 @@
+// Stories only: `fill` sizes the image to its container, so give it a card-like width.
+.container {
+  max-width: 18.75rem; // 300px, matches the stories' `sizes`
+}

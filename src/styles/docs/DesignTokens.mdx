@@ -105,6 +105,9 @@ self-hosted by `next/font`. `h1` steps up to `--font-size-4xl` from the `lg` bre
 
 <SpacingScale tokens={["--size-touch-target"]} />
 
+`--ratio-product-image` (`4 / 7`) is the native ratio of every catalog image (768×1344).
+`ProductImage` frames use it as their `aspect-ratio`, so images reserve their space before they load.
+
 ## Radii
 
 <RadiusScale tokens={["--radius-sm", "--radius-md", "--radius-lg", "--radius-pill"]} />
