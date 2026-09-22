@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ApolloWrapper } from "@/lib/graphql/ApolloWrapper";
+import { fontVariables } from "@/styles/fonts";
 import "@/styles/globals.scss";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body>
         <ApolloWrapper>{children}</ApolloWrapper>
       </body>

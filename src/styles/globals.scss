@@ -1,4 +1,6 @@
-// Minimal modern reset. Design tokens and base typography come in later features.
+// Global styles: design tokens, a minimal modern reset and base typography.
+@use "tokens";
+@use "breakpoints" as *;
 
 *,
 *::before,
@@ -17,7 +19,11 @@ html {
 
 body {
   min-height: 100vh;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -45,6 +51,44 @@ h4,
 h5,
 h6 {
   overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+h1 {
+  font-size: var(--text-h1-size);
+
+  @include bp(lg) {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+h2 {
+  font-size: var(--text-h2-size);
+}
+
+h3 {
+  font-size: var(--text-h3-size);
+  line-height: var(--line-height-snug);
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 @media (prefers-reduced-motion: reduce) {

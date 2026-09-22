@@ -1,1 +1,20 @@
-// Breakpoint mixins (mobile first, min-width). Filled by the design-tokens feature.
+// Breakpoint mixins, mobile first (min-width). Matches the test widths 375 / 768 / 1280.
+// CSS custom properties can't be used in media queries, so breakpoints stay SCSS values.
+@use "sass:map";
+
+$breakpoints: (
+  sm: 375px,
+  md: 768px,
+  lg: 1280px,
+);
+
+// Usage: `@include bp(md) { ... }` applies from 768px up.
+@mixin bp($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error "Unknown breakpoint `#{$name}`. Use one of: #{map.keys($breakpoints)}.";
+  }
+
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}
