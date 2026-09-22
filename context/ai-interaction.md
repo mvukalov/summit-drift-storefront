@@ -17,9 +17,9 @@
 
 ## Workflow (every feature and fix)
 
-1. **Spec** — the feature is described in `context/features/NNN-<name>-spec.md` (or `context/fixes/`); see `context/features/README.md` for naming.
+1. **Spec** — the feature is described in `context/features/NNN-<name>-spec.md` (or `context/fixes/`); see `context/features/README.md` for naming. The spec stays uncommitted until the branch exists.
 2. **Load** — `/feature load <name>` fills `context/current-feature.md`.
-3. **Branch** — `/feature start` creates `feature/<name>` or `fix/<name>` from an up-to-date `main`.
+3. **Branch** — `/feature start` creates `feature/<name>` or `fix/<name>` from an up-to-date `main` and commits the spec as the first commit on that branch (`docs: add <name> spec`).
 4. **Implement** — goal by goal, following the coding standards.
 5. **Verify manually** — in the browser (Playwright MCP when useful).
 6. **Test** — `/feature test`: unit, component and E2E tests where there is logic worth testing.
@@ -34,7 +34,7 @@
 - Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`, `perf:`, `style:`, `build:` (dependency updates, e.g. Dependabot).
 - Small, focused commits on the branch are fine; PRs are **squash-merged** so `main` gets one commit per feature.
 - **Ask before committing.** Never commit until lint, typecheck, tests and build pass.
-- Never push directly to `main`. Everything goes through a PR.
+- Never push directly to `main`. Everything goes through a PR, including specs and docs (`main` is protected).
 - Never force-push to `main`. Never rewrite published history without asking.
 - No Claude or AI attribution in commit messages or PR descriptions.
 
