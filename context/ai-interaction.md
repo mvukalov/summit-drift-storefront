@@ -31,7 +31,7 @@
 ## Git
 
 - Branch per feature or fix: `feature/<kebab-name>`, `fix/<kebab-name>`.
-- Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`, `perf:`, `style:`.
+- Conventional commits: `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`, `perf:`, `style:`, `build:` (dependency updates, e.g. Dependabot).
 - Small, focused commits on the branch are fine; PRs are **squash-merged** so `main` gets one commit per feature.
 - **Ask before committing.** Never commit until lint, typecheck, tests and build pass.
 - Never push directly to `main`. Everything goes through a PR.
