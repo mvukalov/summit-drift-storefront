@@ -20,3 +20,4 @@ Ideas that are **out of scope for the MVP**. Add here instead of building them. 
 - **Visual regression tests** — Storybook + Chromatic or Playwright screenshots
 - **Bundle analysis in CI** — fail on size regressions
 - **Real User Monitoring** — Web Vitals reported from production
+- **Lightweight SEO query** — `generateMetadata` on the collection page calls `getCollection`, fetching 250 products to read a title and description (measured: 2 network hits per render, Apollo does not dedupe across differing sort variables). A `CollectionSeo` document (handle → title, description) would serve metadata on collection and product pages alike
