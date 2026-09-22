@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress
+In Review
 
 ## Goals
 
@@ -60,7 +60,7 @@ In Progress
 ### CI
 
 - [x] "Codegen drift check" step after `npm ci`, before Typecheck: `npm run codegen && git diff --exit-code src/lib/graphql/generated`
-- [ ] Prove it: temporary commit changing a document without regenerating → red run, then revert → green; both URLs in PR Evidence
+- [x] Prove it: temporary commit changing a document without regenerating → red run, then revert → green; both URLs in PR Evidence
 
 ## Notes
 
@@ -75,6 +75,7 @@ In Progress
   3. Codegen scalar list from the first `strictScalars` run: **OK**, the research list was exact: `Color`, `DateTime`, `Decimal`, `HTML`, `ISO8601DateTime`, `URL`, `UnsignedInt64` → `string`, `JSON` → `unknown`. Schema: 426 types.
 - **Decisions made during implementation:**
   - `nonOptionalTypename` + `skipTypeNameForRoot` in `codegen.ts`: Apollo adds `__typename` to every non-root selection and needs it in responses to match fragments (without it, fragment fields come back empty). Types and fixtures now match what Apollo receives.
+  - Domain types omit `__typename` (`Omit<…, "__typename">`), and mappers copy fields explicitly (`toMoney`, `toImage`), so components and stories never need GraphQL artifacts. Guarded by `toStrictEqual` tests. (Review finding.)
   - Extra `CollectionSummary` fragment, shared by `Collections` and `CollectionByHandle`.
   - `isOnSale` from price ranges (no variants fetched): `compareAtPriceRange.max > priceRange.min`. Variants without a compare-at price report `0.0`. Checked against all 30 live products: identical to the per-variant rule (7 on sale, all fully discounted). Card shows `priceRange.min`; compare-at is `compareAtPriceRange.min` if above it, else `.max`.
   - Fetchers throw (Apollo's default `errorPolicy: "none"` rejects on GraphQL and network errors) → route `error.tsx`. No typed-result wrapper here; `errors.ts` for mutations comes with the cart.
@@ -90,7 +91,9 @@ In Progress
   - Components never import generated GraphQL types directly.
   - Use Context7 for Apollo integration, codegen, MSW, Vitest APIs.
 - **Out of scope:** product/search/cart/menu documents and fetchers; styling/tokens; `PreloadQuery` and client queries; Storybook and `msw-storybook-addon`; images and `remotePatterns`.
-- **Deferred:** whether `generateMetadata` and the page share one Apollo client per request (`product-page`).
+- **Deferred:**
+  - whether `generateMetadata` and the page share one Apollo client per request (`product-page`).
+  - `loading.tsx` and `error.tsx` for `/` (`home-page`, noted in `context/features/README.md`). Until then fetcher errors hit Next's default error page.
 - **README trade-off (for `readme-and-deploy`):** Cache Components not used because Apollo's RSC integration doesn't document `"use cache"` support and `registerApolloClient` relies on per-request scoping. Revisit when it does or when PPR is wanted.
 - **Dev-server cache check method:** temporarily set `logging: { fetches: { fullUrl: true, hmrRefreshes: true } }` in `next.config.ts` (reverted), ran `npm run dev`, requested `/` three times. Log: first render `POST https://apparel-outdoor.mock.shop/api 200 (cache skip)`, then `(cache hit)` in 2 ms, so one request per operation and reloads come from the fetch cache. Browser (Playwright): no requests to mock.shop, console clean.
 
