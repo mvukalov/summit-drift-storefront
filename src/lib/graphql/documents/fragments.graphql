@@ -1,0 +1,41 @@
+fragment Money on MoneyV2 {
+  amount
+  currencyCode
+}
+
+fragment Image on Image {
+  url
+  altText
+  width
+  height
+}
+
+fragment CollectionSummary on Collection {
+  handle
+  title
+  description
+  image {
+    ...Image
+  }
+}
+
+fragment ProductCard on Product {
+  handle
+  title
+  featuredImage {
+    ...Image
+  }
+  priceRange {
+    minVariantPrice {
+      ...Money
+    }
+  }
+  compareAtPriceRange {
+    minVariantPrice {
+      ...Money
+    }
+    maxVariantPrice {
+      ...Money
+    }
+  }
+}

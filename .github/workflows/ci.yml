@@ -33,6 +33,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Generated types are committed; fail if a document changed without `npm run codegen`.
+      - name: Codegen drift check
+        run: npm run codegen && git diff --exit-code src/lib/graphql/generated
+
       - name: Lint
         run: npm run lint
 

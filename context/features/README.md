@@ -18,7 +18,7 @@ Specs are written one at a time, right before the feature starts.
 4. **design-tokens** — tokens.scss, globals, breakpoints, Storybook setup
 5. **atoms** — Button, Price, Badge, Swatch, Input, Spinner with stories and tests
 6. **layout-header** — header with menu from the API, footer, skip link
-7. **home-page**
+7. **home-page** — replaces the temporary collection list from graphql-layer; add `loading.tsx` and `error.tsx` for `/`
 8. **collection-page** — grid + sort
 9. **facets** — derived facets, URL state (phase 1: logic + tests, phase 2: UI)
 10. **product-page** — gallery, variant picker, sanitized description, recommendations
