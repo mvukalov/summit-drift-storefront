@@ -1,0 +1,361 @@
+/* eslint-disable */
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+/**
+ * The three-letter currency codes that represent the world currencies used in
+ * stores. These include standard ISO 4217 codes, legacy codes,
+ * and non-standard codes.
+ */
+export type CurrencyCode =
+  /** United Arab Emirates Dirham (AED). */
+  | 'AED'
+  /** Afghan Afghani (AFN). */
+  | 'AFN'
+  /** Albanian Lek (ALL). */
+  | 'ALL'
+  /** Armenian Dram (AMD). */
+  | 'AMD'
+  /** Netherlands Antillean Guilder. */
+  | 'ANG'
+  /** Angolan Kwanza (AOA). */
+  | 'AOA'
+  /** Argentine Pesos (ARS). */
+  | 'ARS'
+  /** Australian Dollars (AUD). */
+  | 'AUD'
+  /** Aruban Florin (AWG). */
+  | 'AWG'
+  /** Azerbaijani Manat (AZN). */
+  | 'AZN'
+  /** Bosnia and Herzegovina Convertible Mark (BAM). */
+  | 'BAM'
+  /** Barbadian Dollar (BBD). */
+  | 'BBD'
+  /** Bangladesh Taka (BDT). */
+  | 'BDT'
+  /** Bulgarian Lev (BGN). */
+  | 'BGN'
+  /** Bahraini Dinar (BHD). */
+  | 'BHD'
+  /** Burundian Franc (BIF). */
+  | 'BIF'
+  /** Bermudian Dollar (BMD). */
+  | 'BMD'
+  /** Brunei Dollar (BND). */
+  | 'BND'
+  /** Bolivian Boliviano (BOB). */
+  | 'BOB'
+  /** Brazilian Real (BRL). */
+  | 'BRL'
+  /** Bahamian Dollar (BSD). */
+  | 'BSD'
+  /** Bhutanese Ngultrum (BTN). */
+  | 'BTN'
+  /** Botswana Pula (BWP). */
+  | 'BWP'
+  /** Belarusian Ruble (BYN). */
+  | 'BYN'
+  /** Belarusian Ruble (BYR). */
+  | 'BYR'
+  /** Belize Dollar (BZD). */
+  | 'BZD'
+  /** Canadian Dollars (CAD). */
+  | 'CAD'
+  /** Congolese franc (CDF). */
+  | 'CDF'
+  /** Swiss Francs (CHF). */
+  | 'CHF'
+  /** Chilean Peso (CLP). */
+  | 'CLP'
+  /** Chinese Yuan Renminbi (CNY). */
+  | 'CNY'
+  /** Colombian Peso (COP). */
+  | 'COP'
+  /** Costa Rican Colones (CRC). */
+  | 'CRC'
+  /** Cape Verdean escudo (CVE). */
+  | 'CVE'
+  /** Czech Koruny (CZK). */
+  | 'CZK'
+  /** Djiboutian Franc (DJF). */
+  | 'DJF'
+  /** Danish Kroner (DKK). */
+  | 'DKK'
+  /** Dominican Peso (DOP). */
+  | 'DOP'
+  /** Algerian Dinar (DZD). */
+  | 'DZD'
+  /** Egyptian Pound (EGP). */
+  | 'EGP'
+  /** Eritrean Nakfa (ERN). */
+  | 'ERN'
+  /** Ethiopian Birr (ETB). */
+  | 'ETB'
+  /** Euro (EUR). */
+  | 'EUR'
+  /** Fijian Dollars (FJD). */
+  | 'FJD'
+  /** Falkland Islands Pounds (FKP). */
+  | 'FKP'
+  /** United Kingdom Pounds (GBP). */
+  | 'GBP'
+  /** Georgian Lari (GEL). */
+  | 'GEL'
+  /** Ghanaian Cedi (GHS). */
+  | 'GHS'
+  /** Gibraltar Pounds (GIP). */
+  | 'GIP'
+  /** Gambian Dalasi (GMD). */
+  | 'GMD'
+  /** Guinean Franc (GNF). */
+  | 'GNF'
+  /** Guatemalan Quetzal (GTQ). */
+  | 'GTQ'
+  /** Guyanese Dollar (GYD). */
+  | 'GYD'
+  /** Hong Kong Dollars (HKD). */
+  | 'HKD'
+  /** Honduran Lempira (HNL). */
+  | 'HNL'
+  /** Croatian Kuna (HRK). */
+  | 'HRK'
+  /** Haitian Gourde (HTG). */
+  | 'HTG'
+  /** Hungarian Forint (HUF). */
+  | 'HUF'
+  /** Indonesian Rupiah (IDR). */
+  | 'IDR'
+  /** Israeli New Shekel (NIS). */
+  | 'ILS'
+  /** Indian Rupees (INR). */
+  | 'INR'
+  /** Iraqi Dinar (IQD). */
+  | 'IQD'
+  /** Iranian Rial (IRR). */
+  | 'IRR'
+  /** Icelandic Kronur (ISK). */
+  | 'ISK'
+  /** Jersey Pound. */
+  | 'JEP'
+  /** Jamaican Dollars (JMD). */
+  | 'JMD'
+  /** Jordanian Dinar (JOD). */
+  | 'JOD'
+  /** Japanese Yen (JPY). */
+  | 'JPY'
+  /** Kenyan Shilling (KES). */
+  | 'KES'
+  /** Kyrgyzstani Som (KGS). */
+  | 'KGS'
+  /** Cambodian Riel. */
+  | 'KHR'
+  /** Kiribati Dollar (KID). */
+  | 'KID'
+  /** Comorian Franc (KMF). */
+  | 'KMF'
+  /** South Korean Won (KRW). */
+  | 'KRW'
+  /** Kuwaiti Dinar (KWD). */
+  | 'KWD'
+  /** Cayman Dollars (KYD). */
+  | 'KYD'
+  /** Kazakhstani Tenge (KZT). */
+  | 'KZT'
+  /** Laotian Kip (LAK). */
+  | 'LAK'
+  /** Lebanese Pounds (LBP). */
+  | 'LBP'
+  /** Sri Lankan Rupees (LKR). */
+  | 'LKR'
+  /** Liberian Dollar (LRD). */
+  | 'LRD'
+  /** Lesotho Loti (LSL). */
+  | 'LSL'
+  /** Lithuanian Litai (LTL). */
+  | 'LTL'
+  /** Latvian Lati (LVL). */
+  | 'LVL'
+  /** Libyan Dinar (LYD). */
+  | 'LYD'
+  /** Moroccan Dirham. */
+  | 'MAD'
+  /** Moldovan Leu (MDL). */
+  | 'MDL'
+  /** Malagasy Ariary (MGA). */
+  | 'MGA'
+  /** Macedonia Denar (MKD). */
+  | 'MKD'
+  /** Burmese Kyat (MMK). */
+  | 'MMK'
+  /** Mongolian Tugrik. */
+  | 'MNT'
+  /** Macanese Pataca (MOP). */
+  | 'MOP'
+  /** Mauritanian Ouguiya (MRU). */
+  | 'MRU'
+  /** Mauritian Rupee (MUR). */
+  | 'MUR'
+  /** Maldivian Rufiyaa (MVR). */
+  | 'MVR'
+  /** Malawian Kwacha (MWK). */
+  | 'MWK'
+  /** Mexican Pesos (MXN). */
+  | 'MXN'
+  /** Malaysian Ringgits (MYR). */
+  | 'MYR'
+  /** Mozambican Metical. */
+  | 'MZN'
+  /** Namibian Dollar. */
+  | 'NAD'
+  /** Nigerian Naira (NGN). */
+  | 'NGN'
+  /** Nicaraguan Córdoba (NIO). */
+  | 'NIO'
+  /** Norwegian Kroner (NOK). */
+  | 'NOK'
+  /** Nepalese Rupee (NPR). */
+  | 'NPR'
+  /** New Zealand Dollars (NZD). */
+  | 'NZD'
+  /** Omani Rial (OMR). */
+  | 'OMR'
+  /** Panamian Balboa (PAB). */
+  | 'PAB'
+  /** Peruvian Nuevo Sol (PEN). */
+  | 'PEN'
+  /** Papua New Guinean Kina (PGK). */
+  | 'PGK'
+  /** Philippine Peso (PHP). */
+  | 'PHP'
+  /** Pakistani Rupee (PKR). */
+  | 'PKR'
+  /** Polish Zlotych (PLN). */
+  | 'PLN'
+  /** Paraguayan Guarani (PYG). */
+  | 'PYG'
+  /** Qatari Rial (QAR). */
+  | 'QAR'
+  /** Romanian Lei (RON). */
+  | 'RON'
+  /** Serbian dinar (RSD). */
+  | 'RSD'
+  /** Russian Rubles (RUB). */
+  | 'RUB'
+  /** Rwandan Franc (RWF). */
+  | 'RWF'
+  /** Saudi Riyal (SAR). */
+  | 'SAR'
+  /** Solomon Islands Dollar (SBD). */
+  | 'SBD'
+  /** Seychellois Rupee (SCR). */
+  | 'SCR'
+  /** Sudanese Pound (SDG). */
+  | 'SDG'
+  /** Swedish Kronor (SEK). */
+  | 'SEK'
+  /** Singapore Dollars (SGD). */
+  | 'SGD'
+  /** Saint Helena Pounds (SHP). */
+  | 'SHP'
+  /** Sierra Leonean Leone (SLL). */
+  | 'SLL'
+  /** Somali Shilling (SOS). */
+  | 'SOS'
+  /** Surinamese Dollar (SRD). */
+  | 'SRD'
+  /** South Sudanese Pound (SSP). */
+  | 'SSP'
+  /** Sao Tome And Principe Dobra (STD). */
+  | 'STD'
+  /** Sao Tome And Principe Dobra (STN). */
+  | 'STN'
+  /** Syrian Pound (SYP). */
+  | 'SYP'
+  /** Swazi Lilangeni (SZL). */
+  | 'SZL'
+  /** Thai baht (THB). */
+  | 'THB'
+  /** Tajikistani Somoni (TJS). */
+  | 'TJS'
+  /** Turkmenistani Manat (TMT). */
+  | 'TMT'
+  /** Tunisian Dinar (TND). */
+  | 'TND'
+  /** Tongan Pa'anga (TOP). */
+  | 'TOP'
+  /** Turkish Lira (TRY). */
+  | 'TRY'
+  /** Trinidad and Tobago Dollars (TTD). */
+  | 'TTD'
+  /** Taiwan Dollars (TWD). */
+  | 'TWD'
+  /** Tanzanian Shilling (TZS). */
+  | 'TZS'
+  /** Ukrainian Hryvnia (UAH). */
+  | 'UAH'
+  /** Ugandan Shilling (UGX). */
+  | 'UGX'
+  /** United States Dollars (USD). */
+  | 'USD'
+  /** Uruguayan Pesos (UYU). */
+  | 'UYU'
+  /** Uzbekistan som (UZS). */
+  | 'UZS'
+  /** Venezuelan Bolivares (VED). */
+  | 'VED'
+  /** Venezuelan Bolivares (VEF). */
+  | 'VEF'
+  /** Venezuelan Bolivares Soberanos (VES). */
+  | 'VES'
+  /** Vietnamese đồng (VND). */
+  | 'VND'
+  /** Vanuatu Vatu (VUV). */
+  | 'VUV'
+  /** Samoan Tala (WST). */
+  | 'WST'
+  /** Central African CFA Franc (XAF). */
+  | 'XAF'
+  /** East Caribbean Dollar (XCD). */
+  | 'XCD'
+  /** West African CFA franc (XOF). */
+  | 'XOF'
+  /** CFP Franc (XPF). */
+  | 'XPF'
+  /** Unrecognized currency. */
+  | 'XXX'
+  /** Yemeni Rial (YER). */
+  | 'YER'
+  /** South African Rand (ZAR). */
+  | 'ZAR'
+  /** Zambian Kwacha (ZMW). */
+  | 'ZMW';
+
+export type CollectionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CollectionsQuery = { collections: { __typename: 'CollectionConnection', nodes: Array<{ __typename: 'Collection', handle: string, title: string, description: string, image: { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null } | null }> } };
+
+export type CollectionByHandleQueryVariables = Exact<{
+  handle: string;
+}>;
+
+
+export type CollectionByHandleQuery = { collection: { __typename: 'Collection', handle: string, title: string, description: string, products: { __typename: 'ProductConnection', nodes: Array<{ __typename: 'Product', handle: string, title: string, featuredImage: { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null } | null, priceRange: { __typename: 'ProductPriceRange', minVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode } }, compareAtPriceRange: { __typename: 'ProductPriceRange', minVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode }, maxVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode } } }> }, image: { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null } | null } | null };
+
+export type MoneyFragment = { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode };
+
+export type ImageFragment = { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null };
+
+export type CollectionSummaryFragment = { __typename: 'Collection', handle: string, title: string, description: string, image: { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null } | null };
+
+export type ProductCardFragment = { __typename: 'Product', handle: string, title: string, featuredImage: { __typename: 'Image', url: string, altText: string | null, width: number | null, height: number | null } | null, priceRange: { __typename: 'ProductPriceRange', minVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode } }, compareAtPriceRange: { __typename: 'ProductPriceRange', minVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode }, maxVariantPrice: { __typename: 'MoneyV2', amount: string, currencyCode: CurrencyCode } } };
+
+export const ImageFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Image"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"altText"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]} as unknown as DocumentNode<ImageFragment, unknown>;
+export const CollectionSummaryFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CollectionSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Collection"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handle"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Image"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Image"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"altText"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}}]} as unknown as DocumentNode<CollectionSummaryFragment, unknown>;
+export const MoneyFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Money"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MoneyV2"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"currencyCode"}}]}}]} as unknown as DocumentNode<MoneyFragment, unknown>;
+export const ProductCardFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ProductCard"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Product"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handle"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"featuredImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Image"}}]}},{"kind":"Field","name":{"kind":"Name","value":"priceRange"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"minVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"compareAtPriceRange"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"minVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Image"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"altText"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Money"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MoneyV2"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"currencyCode"}}]}}]} as unknown as DocumentNode<ProductCardFragment, unknown>;
+export const CollectionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Collections"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"250"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CollectionSummary"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Image"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"altText"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CollectionSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Collection"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handle"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Image"}}]}}]}}]} as unknown as DocumentNode<CollectionsQuery, CollectionsQueryVariables>;
+export const CollectionByHandleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CollectionByHandle"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"handle"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"handle"},"value":{"kind":"Variable","name":{"kind":"Name","value":"handle"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CollectionSummary"}},{"kind":"Field","name":{"kind":"Name","value":"products"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"first"},"value":{"kind":"IntValue","value":"250"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ProductCard"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Image"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"altText"}},{"kind":"Field","name":{"kind":"Name","value":"width"}},{"kind":"Field","name":{"kind":"Name","value":"height"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"Money"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"MoneyV2"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"currencyCode"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CollectionSummary"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Collection"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handle"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Image"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ProductCard"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Product"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"handle"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"featuredImage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Image"}}]}},{"kind":"Field","name":{"kind":"Name","value":"priceRange"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"minVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"compareAtPriceRange"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"minVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}},{"kind":"Field","name":{"kind":"Name","value":"maxVariantPrice"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"Money"}}]}}]}}]}}]} as unknown as DocumentNode<CollectionByHandleQuery, CollectionByHandleQueryVariables>;
