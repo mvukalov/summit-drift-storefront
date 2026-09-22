@@ -42,3 +42,6 @@ next-env.d.ts
 
 # claude code (personal settings)
 .claude/settings.local.json
+
+# private learning docs from /feature export (never committed)
+/process-notes/
