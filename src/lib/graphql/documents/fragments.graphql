@@ -11,6 +11,7 @@ fragment Image on Image {
 }
 
 fragment CollectionSummary on Collection {
+  id
   handle
   title
   description
