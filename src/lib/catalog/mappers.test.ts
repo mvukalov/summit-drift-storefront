@@ -17,11 +17,12 @@ describe("toCollectionSummary", () => {
     const [first] = collectionsFixture.collections.nodes;
     if (!first) throw new Error("Fixture has no collections");
 
-    expect(toCollectionSummary(first)).toEqual({
+    // toStrictEqual: GraphQL's __typename must not leak into domain objects.
+    expect(toCollectionSummary(first)).toStrictEqual({
       handle: "summit-protection-shells",
       title: "Summit Protection Shells",
       description: first.description,
-      image: first.image,
+      image: { url: first.image?.url, altText: null, width: null, height: null },
     });
   });
 
@@ -35,10 +36,19 @@ describe("toCollectionSummary", () => {
 
 describe("toProductCard", () => {
   it("marks a discounted product as on sale with its compare-at price", () => {
-    const card = toProductCard(productByHandle("waterproof-wading-jacket-with-breathable-shell"));
+    const product = productByHandle("waterproof-wading-jacket-with-breathable-shell");
+    const card = toProductCard(product);
 
-    expect(card).toMatchObject({
+    // toStrictEqual: GraphQL's __typename must not leak into domain objects.
+    expect(card).toStrictEqual({
       handle: "waterproof-wading-jacket-with-breathable-shell",
+      title: product.title,
+      image: {
+        url: product.featuredImage?.url,
+        altText: product.featuredImage?.altText,
+        width: product.featuredImage?.width,
+        height: product.featuredImage?.height,
+      },
       isOnSale: true,
       price: { amount: "249.0", currencyCode: "USD" },
       compareAtPrice: { amount: "323.7", currencyCode: "USD" },
