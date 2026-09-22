@@ -41,7 +41,7 @@ Reference: `context/screenshots/styleguide-desktop-1.png` and `-2.png` (a Lovabl
 - Border radius (buttons/inputs look ~8–10px, cards look larger).
 - Shadow depth on the three card placeholders.
 - Focus-ring color (looks like a blue outline, not one of the five palette colors — confirm this is intentional or a Lovable default before locking it into `--color-focus-ring`).
-- Button/input states shown: Primary (slate fill), Secondary (cream fill, slate border), Ghost, Hover, Focus, Disabled, Loading — these inform the *token* names needed (e.g. `--color-disabled-text`) even though the Button component itself isn't built yet.
+- Button/input states shown: Primary (slate fill), Secondary (cream fill, slate border), Ghost, Hover, Focus, Disabled, Loading — these inform the _token_ names needed (e.g. `--color-disabled-text`) even though the Button component itself isn't built yet.
 
 **Not in scope for this feature:** the per-option swatch colors visible in the mockup (Slate/Moss/Clay dots under "Badges, swatches & quantity") — the mockup gives no hex for Moss, and nothing consumes a swatch-color token until the `atoms` feature builds the `Swatch` component. Adding them now would be guessing.
 
