@@ -1,0 +1,112 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { ColorSwatches, RadiusScale, ShadowScale, SpacingScale, TypeScale } from "./TokenDocs";
+
+<Meta title="Foundations/Design Tokens" />
+
+# Design Tokens
+
+The visual language of Summit Drift Outfitters. Every value on this page is read live from
+`src/styles/tokens.scss`, so this page is the source of truth for review.
+
+Tokens come in two tiers. **Primitives** hold raw values (`--color-clay`). **Semantic** tokens
+name a purpose (`--color-accent`) and point at a primitive. Components use semantic tokens only.
+
+## Color: primitives
+
+<ColorSwatches
+  tokens={[
+    "--color-slate",
+    "--color-slate-soft",
+    "--color-clay",
+    "--color-clay-dark",
+    "--color-sand",
+    "--color-sand-dark",
+    "--color-cream",
+    "--color-soft-cream",
+    "--color-stone-muted",
+    "--color-stone-text",
+  ]}
+/>
+
+`--color-clay` (#B5623F) is 3.7:1 on cream, below WCAG AA for text. Text and small fills use
+`--color-clay-dark` (4.9:1). Plain clay is kept for large or decorative use only.
+
+## Color: semantic
+
+<ColorSwatches
+  tokens={[
+    "--color-background",
+    "--color-surface",
+    "--color-surface-inverse",
+    "--color-surface-muted",
+    "--color-text",
+    "--color-text-muted",
+    "--color-text-inverse",
+    "--color-border",
+    "--color-border-strong",
+    "--color-primary",
+    "--color-on-primary",
+    "--color-accent",
+    "--color-on-accent",
+    "--color-accent-decorative",
+    "--color-sale",
+    "--color-on-sale",
+    "--color-disabled-bg",
+    "--color-disabled-text",
+    "--color-focus-ring",
+  ]}
+/>
+
+## Typography
+
+Headings use **Libre Baskerville**, body and UI text use **IBM Plex Sans**. Both are
+self-hosted by `next/font`. `h1` steps up to `--font-size-4xl` from the `lg` breakpoint.
+
+<TypeScale
+  samples={[
+    { label: "Heading 01", token: "--text-h1-size", font: "heading", weight: "--font-weight-bold" },
+    { label: "Heading 02", token: "--text-h2-size", font: "heading", weight: "--font-weight-bold" },
+    { label: "Heading 03", token: "--text-h3-size", font: "heading", weight: "--font-weight-bold" },
+    { label: "$249.00", token: "--text-price-size", font: "body", weight: "--font-weight-bold" },
+    {
+      label: "Body: technical apparel for exposed terrain.",
+      token: "--text-body-size",
+      font: "body",
+    },
+    { label: "Small: material, size and field notes.", token: "--text-small-size", font: "body" },
+    {
+      label: "EYEBROW LABEL",
+      token: "--text-eyebrow-size",
+      font: "body",
+      weight: "--font-weight-semibold",
+    },
+  ]}
+/>
+
+## Spacing
+
+<SpacingScale
+  tokens={[
+    "--space-1",
+    "--space-2",
+    "--space-3",
+    "--space-4",
+    "--space-5",
+    "--space-6",
+    "--space-7",
+    "--space-8",
+  ]}
+/>
+
+## Radii
+
+<RadiusScale tokens={["--radius-sm", "--radius-md", "--radius-lg", "--radius-pill"]} />
+
+## Shadows
+
+<ShadowScale tokens={["--shadow-sm", "--shadow-md", "--shadow-lg"]} />
+
+## Breakpoints
+
+Mobile first, `min-width`, via `@include bp(name)` from `src/styles/_breakpoints.scss`:
+`sm` 375px, `md` 768px, `lg` 1280px.
