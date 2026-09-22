@@ -1,0 +1,14 @@
+# Home "Featured": the first product of each collection, in one round-trip.
+# Deliberately not CollectionByHandle, which fetches up to 250 products per collection.
+query FeaturedProducts {
+  collections(first: 4) {
+    nodes {
+      handle
+      products(first: 1) {
+        nodes {
+          ...ProductCard
+        }
+      }
+    }
+  }
+}

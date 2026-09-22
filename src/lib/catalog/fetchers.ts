@@ -2,6 +2,7 @@ import "server-only";
 import {
   CollectionByHandleDocument,
   CollectionsDocument,
+  FeaturedProductsDocument,
   MainMenuDocument,
 } from "@/lib/graphql/generated/graphql";
 import { query } from "@/lib/graphql/rsc-client";
@@ -35,6 +36,19 @@ export async function getCollection(
     collection: toCollectionSummary(data.collection),
     products: data.collection.products.nodes.map(toProductCard),
   };
+}
+
+// One product per collection (`products(first: 1)`, in the API's order). The catalog has no
+// "featured" flag, so this keeps Home dynamic without hard-coded handles.
+// A collection without products contributes nothing.
+export async function getFeaturedProducts(): Promise<ProductCard[]> {
+  const { data } = await query({ query: FeaturedProductsDocument });
+  if (!data) {
+    throw new Error("Featured products query returned no data");
+  }
+  return data.collections.nodes.flatMap((collection) =>
+    collection.products.nodes.map(toProductCard),
+  );
 }
 
 // The menu's "Home" entry (type FRONTPAGE) is dropped: the logo already links home.
