@@ -6,6 +6,7 @@ import {
   MainMenuDocument,
 } from "@/lib/graphql/generated/graphql";
 import { query } from "@/lib/graphql/rsc-client";
+import { DEFAULT_SORT, toSortVariables, type SortOption } from "@/lib/facets/sort";
 import type { CollectionSummary, ProductCard } from "@/types/catalog";
 import type { MenuItem } from "@/types/navigation";
 import { toCollectionSummary, toMenuItem, toProductCard } from "./mappers";
@@ -21,10 +22,16 @@ export async function getCollections(): Promise<CollectionSummary[]> {
   return data.collections.nodes.map(toCollectionSummary);
 }
 
+// Sorting happens on the API (`sortKey`/`reverse`), not on the fetched array, so the
+// order is correct for the whole collection and the page stays server-rendered.
 export async function getCollection(
   handle: string,
+  sort: SortOption = DEFAULT_SORT,
 ): Promise<{ collection: CollectionSummary; products: ProductCard[] } | null> {
-  const { data } = await query({ query: CollectionByHandleDocument, variables: { handle } });
+  const { data } = await query({
+    query: CollectionByHandleDocument,
+    variables: { handle, ...toSortVariables(sort) },
+  });
   if (!data) {
     throw new Error("Collection query returned no data");
   }
