@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { Button } from "./Button";
+import { Button, buttonClassName } from "./Button";
 
 describe("Button", () => {
   it("renders a native button that does not submit forms by default", () => {
@@ -72,5 +72,20 @@ describe("Button", () => {
 
     expect(screen.getByRole("button")).not.toHaveAttribute("aria-busy");
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("gives a link the same styling as the button via buttonClassName", () => {
+    render(
+      <>
+        <Button variant="secondary">Shop sale</Button>
+        <a href="#featured" className={buttonClassName("secondary")}>
+          Shop sale
+        </a>
+      </>,
+    );
+
+    expect(screen.getByRole("link", { name: "Shop sale" }).className).toBe(
+      screen.getByRole("button", { name: "Shop sale" }).className,
+    );
   });
 });

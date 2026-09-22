@@ -113,7 +113,7 @@ e2e/                       Playwright specs
 ## Performance
 
 - Budgets (enforced by Lighthouse CI): Performance ≥ 90, Accessibility ≥ 95, LCP < 2.5 s, CLS < 0.1.
-- The LCP image on each page uses `priority`. All images reserve their aspect ratio.
+- Exactly one image per page, the LCP image, uses `fetchPriority="high"` with `loading="eager"`. Other above-the-fold images may use `loading="eager"` without high priority. `priority` is deprecated in Next 16; don't use it. All images reserve their aspect ratio.
 - Avoid large client-side dependencies. Check the bundle impact before adding a library.
 
 ## Code Quality

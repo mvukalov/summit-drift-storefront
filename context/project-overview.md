@@ -45,10 +45,10 @@ Menu `main-menu`: Home + the four collections.
 - Options are identical within a collection, and some are odd (trekking poles with sizes S–XL). It's demo data; the UI must stay generic.
 - `description` is plain text; `descriptionHtml` contains HTML (`<p>`, `<ul>`). Rendering it requires **sanitization** (XSS).
 - `quantityAvailable` is `null`, and the API accepts any quantity (tested with 9999). **Quantity limits are a frontend rule.**
-- **Images:** 2–3 per product, all PNG, 768×1344 portrait, **~1.4 MB each**. Collection images exist but lack width/height metadata.
-  - The Shopify CDN `&width=` parameter resizes but stays PNG (300px ≈ 214 KB).
-  - `preferredContentType: WEBP` is ignored.
-  - `next/image` (AVIF/WebP) is therefore essential for performance.
+- **Images:** 2–3 per product (79 total), all PNG sources, 768×1344 portrait (4:7), **~1.4 MB each as PNG**. Collection images reuse product images but report `width/height: null`. All variants of a product use its featured image.
+  - The Shopify CDN **negotiates the format on the `Accept` header** (`vary: Accept`). Browsers that accept WebP get a full-size WebP of **~56–89 KB**. Clients without WebP in `Accept` (curl, Next's server-side fetch) get the 1.4 MB PNG. Shopify never serves AVIF (verified 2026-09-22).
+  - `&width=` resizes but never upscales past 768 px. `preferredContentType: WEBP` and `&format=webp` change nothing; the format comes from `Accept`.
+  - `next/image` (AVIF/WebP at the rendered width) is still ~4–13× smaller than Shopify's full-size WebP. Details and numbers: `docs/image-performance.md`.
 
 ### API capabilities (tested)
 
@@ -140,9 +140,9 @@ The API ignores filters, so the server fetches the whole collection (≤ 250 pro
 
 ### 5.4 Image performance (measured)
 
-Product images are 1.4 MB PNGs.
+Product images are 1.4 MB PNG sources; browsers get a full-size ~56–89 KB WebP from the Shopify CDN (see §2).
 
-- Plan: `next/image` with `remotePatterns` for `cdn.shopify.com`, correct `sizes`, AVIF/WebP, priority on the LCP image, reserved aspect ratio (768×1344) to avoid CLS.
+- Plan: `next/image` with `remotePatterns` for `cdn.shopify.com`, correct `sizes`, AVIF/WebP, `fetchPriority="high"` on the LCP image, reserved aspect ratio (768×1344) to avoid CLS.
 - **Measure before/after** (Lighthouse: LCP, total image bytes, CLS) and record the numbers in the README.
 
 ### 5.5 SEO: canonical URLs and structured data

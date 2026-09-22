@@ -1,0 +1,52 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-radius: var(--radius-lg);
+
+  // The focused link is the invisible overlay, so the ring goes on the card.
+  &:has(.link:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+.media {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: normal;
+}
+
+.link {
+  text-decoration: none;
+
+  // Stretches the click target over the whole card.
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+    content: "";
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  // The whole card is the target, so hovering anywhere on it underlines the title.
+  .card:hover & {
+    text-decoration: underline;
+  }
+}

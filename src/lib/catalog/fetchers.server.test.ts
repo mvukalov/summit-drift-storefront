@@ -3,13 +3,15 @@ import { describe, expect, it } from "vitest";
 import {
   CollectionByHandleDocument,
   CollectionsDocument,
+  FeaturedProductsDocument,
   MainMenuDocument,
 } from "@/lib/graphql/generated/graphql";
 import { collectionByHandleFixture } from "@/test/msw/fixtures/collectionByHandle";
+import { featuredProductsFixture } from "@/test/msw/fixtures/featuredProducts";
 import { mainMenuFixture } from "@/test/msw/fixtures/mainMenu";
 import { server } from "@/test/msw/server";
 import { shop } from "@/test/msw/handlers";
-import { getCollection, getCollections, getMainMenu } from "./fetchers";
+import { getCollection, getCollections, getFeaturedProducts, getMainMenu } from "./fetchers";
 
 describe("getCollections", () => {
   it("returns every collection as a CollectionSummary", async () => {
@@ -87,6 +89,65 @@ describe("getCollection", () => {
     server.use(shop.query(CollectionByHandleDocument, () => HttpResponse.error()));
 
     await expect(getCollection("summit-protection-shells")).rejects.toThrow();
+  });
+});
+
+describe("getFeaturedProducts", () => {
+  it("returns the first product of each collection as a ProductCard", async () => {
+    const products = await getFeaturedProducts();
+
+    expect(products.map((product) => product.handle)).toEqual([
+      "waterproof-wading-jacket-with-breathable-shell",
+      "performance-technical-tee",
+      "jogger-aus-technischer-mikrofaser",
+      "topo-lined-canvas-utility-cap",
+    ]);
+    expect(products.filter((product) => product.isOnSale).map((product) => product.handle)).toEqual(
+      ["waterproof-wading-jacket-with-breathable-shell", "performance-technical-tee"],
+    );
+  });
+
+  it("skips collections without products", async () => {
+    const { collections } = featuredProductsFixture;
+    server.use(
+      shop.query(FeaturedProductsDocument, () =>
+        HttpResponse.json({
+          data: {
+            collections: {
+              ...collections,
+              nodes: collections.nodes.map((collection, i) =>
+                i === 0
+                  ? { ...collection, products: { ...collection.products, nodes: [] } }
+                  : collection,
+              ),
+            },
+          },
+        }),
+      ),
+    );
+
+    const products = await getFeaturedProducts();
+
+    expect(products).toHaveLength(3);
+    expect(products.map((product) => product.handle)).not.toContain(
+      "waterproof-wading-jacket-with-breathable-shell",
+    );
+  });
+
+  it("rejects on GraphQL errors", async () => {
+    server.use(
+      shop.query(FeaturedProductsDocument, () =>
+        HttpResponse.json({ errors: [{ message: "Internal error" }] }),
+      ),
+    );
+
+    await expect(getFeaturedProducts()).rejects.toThrow("Internal error");
+  });
+
+  it("rejects on network errors", async () => {
+    server.use(shop.query(FeaturedProductsDocument, () => HttpResponse.error()));
+
+    await expect(getFeaturedProducts()).rejects.toThrow();
   });
 });
 
