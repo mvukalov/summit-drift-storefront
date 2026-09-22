@@ -1,0 +1,30 @@
+.spinner {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+// Sized in em so it scales with the surrounding text (e.g. a button label).
+.ring {
+  width: 1em;
+  height: 1em;
+  border: 0.125em solid currentcolor;
+  border-right-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: spin 0.8s linear infinite;
+}
+
+// The global reduced-motion rule only shortens the animation, which would leave the ring
+// frozen at an arbitrary angle. Stop it here and show a static dotted ring instead.
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    border-style: dotted;
+    border-right-color: currentcolor;
+    animation: none;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

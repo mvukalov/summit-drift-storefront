@@ -1,0 +1,56 @@
+.button {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+
+  // Loading keeps the variant's look; only a plain disabled button greys out.
+  &[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  &:disabled:not([aria-busy="true"]) {
+    color: var(--color-disabled-text);
+    cursor: not-allowed;
+    background-color: var(--color-disabled-bg);
+    border-color: transparent;
+  }
+}
+
+.primary {
+  color: var(--color-on-primary);
+  background-color: var(--color-primary);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+  }
+}
+
+.secondary {
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border-color: var(--color-border-strong);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-muted);
+  }
+}
+
+.ghost {
+  color: var(--color-text);
+  background-color: transparent;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-surface-muted);
+  }
+}
