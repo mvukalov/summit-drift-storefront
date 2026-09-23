@@ -1,0 +1,8 @@
+# The PDP fetches the product and all of its variants in one request: the variant picker
+# resolves a selection to a variant client-side, so every combination has to be present.
+# 12 variants per product here; `first: 100` leaves room without risking the 250 ceiling.
+query ProductByHandle($handle: String!) {
+  product(handle: $handle) {
+    ...ProductDetail
+  }
+}

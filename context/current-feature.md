@@ -24,9 +24,16 @@ In Progress
 
 **Phase 2 — data**
 
-- [ ] `ProductByHandle` query in `src/lib/graphql/documents/`: handle, title, `descriptionHtml`, images, options, variants (id, selected options, price, `compareAtPrice`, `availableForSale`); run `npm run codegen`
-- [ ] `getProduct(handle)` fetcher + mapper(s), unknown handle → `null` → `notFound()` (same pattern as `getCollection`)
-- [ ] Option-name normalization in `src/lib/format/` (matching `?color=moss` against the API's casing/spacing)
+- [x] `ProductByHandle` query + `ProductDetail`/`ProductVariant` fragments; codegen run and output committed
+- [x] `getProduct(handle)` fetcher + `toProductDetail`/`toProductVariant` mappers, unknown handle → `null` → `notFound()`; real fixture captured from the live API and wired into MSW
+- [x] ~~Option-name normalization~~ **already exists** — `src/lib/format/options.ts` (`formatOptionName`/`formatOptionValue`) shipped with Facets Phase 1, and `parseFacetsParam` established that the URL carries the **raw API value**, matched exactly. Nothing to add; building a second normalizer is exactly what the spec warned against
+
+**Phase 2 findings (carried into Phase 3)**
+
+- `seo.description` is **unusable**: 17 of 30 products return HTML inside it and 23 are truncated mid-sentence with `...`. `generateMetadata` and JSON-LD must use the plain `description` field, which is clean on all 30. The query does not select `seo` at all.
+- **Every variant of every product reports the product's featured image** (30/30 verified). The spec's "image switches when the variant has its own image" is therefore unreachable with this catalog — same class as out-of-stock. Build it, test it synthetically, document it.
+- `vendor` is uniform (`Summit Drift Outfitters`) → the JSON-LD brand. `productType` mirrors the collection title.
+- **Deviation from project overview §7, needs a ruling:** §7 sketches `ProductDetail { ...ProductCard, … }`. Implemented as a _separate_ type instead: the card's price is a "from" price derived from the collection price range, while the PDP's price comes from the selected variant, so sharing the shape would mean fetching `priceRange` the PDP never reads. Reversible — say the word and it extends `ProductCard`.
 
 **Phase 3 — PDP UI**
 
@@ -58,12 +65,12 @@ In Progress
 
 **Verify at implementation time (both flagged by the spec):**
 
-1. Sanitizer was measured in a throwaway Node harness and in this repo's Vitest `client` config — **never inside a live RSC render**. Do one real dev-server check on a product's description.
+1. ~~Sanitizer never verified inside a live RSC render.~~ **Done in Phase 1** — temporary route on the dev server rendered real API copy plus hostile input, everything dangerous stripped, and a production build confirmed `sanitize-html` never reaches `.next/static/`.
 2. ~~Does mock.shop have any `availableForSale: false` variant?~~ **Answered 2026-09-23:** no — **0 of 360 variants** are unavailable, and `quantityAvailable` is `null` on all 360. Project overview §2 still holds. So the out-of-stock UI is a **deliberately untested-by-real-data branch**: build it, unit/component-test it with synthetic data, and document it as unreachable with this catalog (same treatment `collection-page` gave the empty state).
 
 **Out of scope:** real "Add to cart"/cart state (`cart` feature); retrofitting `RichText` into `collection-page` (known gap, flagged not fixed); CSP header (now in `new-feature-list.md`); a wider allowlist; reviews/related products; E2E (`e2e-and-a11y` feature).
 
-**Carried over from Facets Phase 2:** the `<dialog>` wiring is duplicated between `MobileNav` and `FilterDrawer` (2 copies, under the 3+ rule). A `/cleanup` was meant to happen before `product-page` — not done. Decide whether to run it first or let it ride.
+**Carried over from Facets Phase 2: resolved.** The `<dialog>` wiring duplicated between `MobileNav` and `FilterDrawer` was extracted into `src/hooks/useModalDialog.ts` during the `/cleanup` run between Phase 1 and Phase 2, with its own test. Both TODOs are gone.
 
 ## History
 

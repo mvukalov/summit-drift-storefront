@@ -4,12 +4,13 @@ import {
   CollectionsDocument,
   FeaturedProductsDocument,
   MainMenuDocument,
+  ProductByHandleDocument,
 } from "@/lib/graphql/generated/graphql";
 import { query } from "@/lib/graphql/rsc-client";
 import { DEFAULT_SORT, toSortVariables, type SortOption } from "@/lib/facets/sort";
-import type { CollectionSummary, ProductCard } from "@/types/catalog";
+import type { CollectionSummary, ProductCard, ProductDetail } from "@/types/catalog";
 import type { MenuItem } from "@/types/navigation";
-import { toCollectionSummary, toMenuItem, toProductCard } from "./mappers";
+import { toCollectionSummary, toMenuItem, toProductCard, toProductDetail } from "./mappers";
 
 // With Apollo's default errorPolicy ("none"), GraphQL and network errors reject
 // the query. They propagate to the route's error boundary instead of becoming empty data.
@@ -43,6 +44,23 @@ export async function getCollection(
     collection: toCollectionSummary(data.collection),
     products: data.collection.products.nodes.map(toProductCard),
   };
+}
+
+// The product and all of its variants in one request, so the variant picker can resolve a
+// selection without a round-trip. Unknown handle -> null, for the route to turn into a 404.
+export async function getProduct(handle: string): Promise<ProductDetail | null> {
+  const { data } = await query({
+    query: ProductByHandleDocument,
+    variables: { handle },
+  });
+  if (!data) {
+    throw new Error("Product query returned no data");
+  }
+  // Unknown handle: the API returns `product: null` without an error.
+  if (!data.product) {
+    return null;
+  }
+  return toProductDetail(data.product);
 }
 
 // One product per collection (`products(first: 1)`, in the API's order). The catalog has no
