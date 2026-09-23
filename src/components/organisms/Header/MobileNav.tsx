@@ -13,6 +13,11 @@ export interface MobileNavProps {
 
 // A native modal <dialog>: showModal() makes the rest of the page inert (focus stays inside)
 // and turns Escape into a `close` event, so neither needs hand-written handling here.
+//
+// TODO: this dialog wiring (refs, open state, showModal/close, focus return, backdrop click)
+// is duplicated in organisms/FilterSidebar/FilterDrawer.tsx. Two copies is under the
+// project's 3+ rule for extracting a shared `useModalDialog` hook, so it stays duplicated
+// on purpose. Revisit at the next /cleanup pass, or as soon as a third dialog appears.
 export function MobileNav({ items }: MobileNavProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);

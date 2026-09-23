@@ -1,0 +1,16 @@
+@use "../../../styles/breakpoints" as *;
+
+// Hidden below lg — and `display: none` takes it out of the accessibility tree too, so the
+// drawer's copy of the same controls is the only one a screen reader finds. Same breakpoint
+// as the header's nav, so the whole page switches to its mobile layout at once.
+.sidebar {
+  display: none;
+
+  @include bp(lg) {
+    display: block;
+    align-self: start;
+    // Follows the grid while the column is shorter than the page.
+    position: sticky;
+    top: var(--space-4);
+  }
+}
