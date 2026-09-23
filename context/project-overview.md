@@ -192,13 +192,21 @@ Shopify Storefront GraphQL API (apparel-outdoor.mock.shop)
 ## 7. Domain Types (derived from generated GraphQL types)
 
 ```ts
-ProductCard   { handle, title, image, price, compareAtPrice?, isOnSale }
-ProductDetail { ...ProductCard, descriptionHtml (sanitized), images[], options[], variants[] }
-Variant       { id, selectedOptions: {name, value}[], price, compareAtPrice?, available, image? }
+ProductCard   { handle, title, options[], image, price, compareAtPrice?, isOnSale }
+ProductDetail { handle, title, vendor, description, descriptionHtml, options[], images[], variants[] }
+ProductVariant{ id, title, sku?, selectedOptions: {name, value}[], price, compareAtPrice?, availableForSale, image? }
 Facet         { key, label, type: 'option' | 'price' | 'boolean', values: {value, label, count, active}[] }
 CartLine      { id, variantId, title, options, image, quantity, lineTotal }
 Cart          { id, lines: CartLine[], subtotal, totalQuantity, checkoutUrl }
 ```
+
+Two things this shape settles, decided while building the product page:
+
+- **`ProductDetail` does not extend `ProductCard`.** The card shows a "from" price derived
+  from the collection's `priceRange`; the PDP's price comes from the selected variant. Sharing
+  the shape would mean fetching a range the PDP never reads.
+- **`descriptionHtml` is carried raw**, not pre-sanitized. Sanitizing happens where it is
+  rendered, in the `RichText` atom, which is the single choke point (`docs/html-sanitization.md`).
 
 ---
 

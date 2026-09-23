@@ -33,7 +33,7 @@ In Progress
 - `seo.description` is **unusable**: 17 of 30 products return HTML inside it and 23 are truncated mid-sentence with `...`. `generateMetadata` and JSON-LD must use the plain `description` field, which is clean on all 30. The query does not select `seo` at all.
 - **Every variant of every product reports the product's featured image** (30/30 verified). The spec's "image switches when the variant has its own image" is therefore unreachable with this catalog — same class as out-of-stock. Build it, test it synthetically, document it.
 - `vendor` is uniform (`Summit Drift Outfitters`) → the JSON-LD brand. `productType` mirrors the collection title.
-- **Deviation from project overview §7, needs a ruling:** §7 sketches `ProductDetail { ...ProductCard, … }`. Implemented as a _separate_ type instead: the card's price is a "from" price derived from the collection price range, while the PDP's price comes from the selected variant, so sharing the shape would mean fetching `priceRange` the PDP never reads. Reversible — say the word and it extends `ProductCard`.
+- ~~**Deviation from project overview §7, needs a ruling.**~~ **Approved 2026-09-23:** `ProductDetail` stays a separate type rather than extending `ProductCard`, because the card's "from" price comes from the collection range and the PDP's from the selected variant. §7 has been updated to match, along with a note that `descriptionHtml` is carried raw.
 
 **Phase 3 — PDP UI**
 
