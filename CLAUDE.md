@@ -22,10 +22,11 @@ Scripts are added by the setup features. Only use scripts that exist in `package
 - **Typecheck**: `npm run typecheck` (runs `next typegen` first so route types exist on a clean checkout)
 - **Format**: `npm run format`, `npm run format:check`
 - **Unit/component tests**: `npm run test` (single run), `npm run test:watch`, `npm run test:coverage`
-- **E2E**: `npm run test:e2e`
-- **GraphQL types**: `npm run codegen` (run after changing any `.graphql` document)
+- **E2E**: not wired up yet; added by the e2e-and-a11y feature
+- **GraphQL types**: `npm run codegen` (run after changing any `.graphql` document); `npm run codegen:schema` refreshes `schema.graphql` from the live API, run manually
+- **Serve the production build**: `npm run start` (after `npm run build`)
 - **Storybook**: `npm run storybook`, `npm run build-storybook`
-- **Lighthouse CI**: `npm run lhci`
+- **Lighthouse CI**: not wired up yet; added by the performance feature
 
 ## API
 

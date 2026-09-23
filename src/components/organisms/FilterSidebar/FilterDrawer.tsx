@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useRef, useState, type MouseEvent } from "react";
 import { Button } from "@/components/atoms/Button/Button";
+import { useModalDialog } from "@/hooks/useModalDialog";
 import { useRouter } from "next/navigation";
 import { clearFacets, collectionHref, countActiveFacets } from "@/lib/facets/query";
 import { FilterPanel, type FilterPanelProps } from "./FilterPanel";
@@ -16,48 +16,18 @@ export interface FilterDrawerProps extends Omit<FilterPanelProps, "onNavigate"> 
 /**
  * The mobile filter trigger and the panel it opens.
  *
- * A native modal `<dialog>`, like the header's mobile nav: `showModal()` makes the rest of
- * the page inert and turns Escape into a `close` event, so the focus trap and the Escape
- * handler are the browser's rather than hand-written ones.
+ * A native modal `<dialog>`, like the header's mobile nav: the shared `useModalDialog` hook
+ * owns the wiring, and the browser owns the focus trap and the Escape handler.
  *
  * The drawer deliberately stays open while filters are applied — the counts and the panel
  * re-render behind it, so several filters can be chosen in one visit. That is the one
  * behavioural difference from the header's nav, which closes as soon as a link is followed.
  */
-// TODO: this dialog wiring (refs, open state, showModal/close, focus return, backdrop click)
-// is duplicated in organisms/Header/MobileNav.tsx. Two copies is under the project's 3+ rule
-// for extracting a shared `useModalDialog` hook, so it stays duplicated on purpose. Revisit
-// at the next /cleanup pass, or as soon as a third dialog appears.
 export function FilterDrawer({ resultCount, ...panelProps }: FilterDrawerProps) {
   const router = useRouter();
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const panelId = useId();
-  const titleId = useId();
+  const { dialogProps, triggerProps, titleId, close } = useModalDialog();
 
   const activeCount = countActiveFacets(panelProps.selected);
-
-  function openDrawer() {
-    dialogRef.current?.showModal();
-    setIsOpen(true);
-  }
-
-  function closeDrawer() {
-    dialogRef.current?.close();
-  }
-
-  // Runs however the dialog closes (button, Escape, backdrop). Browsers restore focus on
-  // their own as well; doing it explicitly keeps the behaviour identical everywhere.
-  function handleClose() {
-    setIsOpen(false);
-    triggerRef.current?.focus();
-  }
-
-  // A backdrop click targets the <dialog> itself; content clicks target its children.
-  function handleDialogClick(event: MouseEvent<HTMLDialogElement>) {
-    if (event.target === event.currentTarget) closeDrawer();
-  }
 
   function handleClearAll() {
     router.push(collectionHref(panelProps.basePath, clearFacets(), panelProps.sort), {
@@ -67,27 +37,12 @@ export function FilterDrawer({ resultCount, ...panelProps }: FilterDrawerProps) 
 
   return (
     <>
-      <Button
-        ref={triggerRef}
-        variant="secondary"
-        className={styles.trigger}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        aria-controls={panelId}
-        onClick={openDrawer}
-      >
+      <Button {...triggerProps} variant="secondary" className={styles.trigger}>
         <FilterIcon />
         Filters{activeCount > 0 && ` (${activeCount})`}
       </Button>
 
-      <dialog
-        ref={dialogRef}
-        id={panelId}
-        className={styles.dialog}
-        aria-labelledby={titleId}
-        onClose={handleClose}
-        onClick={handleDialogClick}
-      >
+      <dialog {...dialogProps} className={styles.dialog}>
         <div className={styles.content}>
           <div className={styles.top}>
             <h2 id={titleId} className={styles.title}>
@@ -97,7 +52,7 @@ export function FilterDrawer({ resultCount, ...panelProps }: FilterDrawerProps) 
               variant="ghost"
               className={styles.close}
               aria-label="Close filters"
-              onClick={closeDrawer}
+              onClick={close}
             >
               <CloseIcon />
             </Button>
@@ -115,7 +70,7 @@ export function FilterDrawer({ resultCount, ...panelProps }: FilterDrawerProps) 
                 Clear all
               </Button>
             )}
-            <Button onClick={closeDrawer}>
+            <Button onClick={close}>
               Show {resultCount} {resultCount === 1 ? "product" : "products"}
             </Button>
           </div>

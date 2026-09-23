@@ -41,11 +41,6 @@ export function parseSortParam(value: string | string[] | undefined): SortOption
   return sortSchema.parse(value);
 }
 
-/** The query string for a sort option; empty for the default, which keeps URLs clean. */
-export function serializeSortParam(sort: SortOption): string {
-  return sort === DEFAULT_SORT ? "" : `?${SORT_PARAM}=${sort}`;
-}
-
 export function toSortVariables(sort: SortOption): SortVariables {
   return SORT_VARIABLES[sort];
 }

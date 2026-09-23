@@ -16,8 +16,10 @@ import { SORT_PARAM } from "./sort";
 // page. Values are validated against the facets actually derived from the collection, so
 // `?color=purple` drops the filter and shows everything rather than matching zero products.
 
-export const SALE_PARAM = "sale";
-export const PRICE_PARAM = "price";
+// Internal to this module: the URL shape is owned here, and callers go through
+// `parseFacetsParam`/`serializeFacetsParam` rather than building params themselves.
+const SALE_PARAM = "sale";
+const PRICE_PARAM = "price";
 
 /** The `sale=1` marker; any other value leaves the facet unselected. */
 const SALE_ON = "1";
