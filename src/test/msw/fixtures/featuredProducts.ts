@@ -13,6 +13,10 @@ export const featuredProductsFixture = {
             {
               handle: "waterproof-wading-jacket-with-breathable-shell",
               title: "Waterproof Wading Jacket With Breathable Shell",
+              options: [
+                { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+                { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+              ],
               featuredImage: {
                 url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/d8ed96bd1d0432d1fa0cfe305622a3bd.png?v=14970910",
                 altText:
@@ -56,6 +60,14 @@ export const featuredProductsFixture = {
             {
               handle: "performance-technical-tee",
               title: "Performance Technical Tee",
+              options: [
+                { name: "size", values: ["S", "M", "L"], __typename: "ProductOption" },
+                {
+                  name: "color",
+                  values: ["charcoal", "sand", "fern", "stone"],
+                  __typename: "ProductOption",
+                },
+              ],
               featuredImage: {
                 url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/397c28136fe9eeff79e6bad8d5329065.png?v=13678502",
                 altText:
@@ -99,6 +111,14 @@ export const featuredProductsFixture = {
             {
               handle: "jogger-aus-technischer-mikrofaser",
               title: "Joggers in technical microfiber",
+              options: [
+                {
+                  name: "material",
+                  values: ["nylon-blend", "stretch-canvas", "soft-shell"],
+                  __typename: "ProductOption",
+                },
+                { name: "size", values: ["30", "32", "34", "36"], __typename: "ProductOption" },
+              ],
               featuredImage: {
                 url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/3447b938643f0f1df0e77cbbf9dea9b3.png?v=15046180",
                 altText:
@@ -142,6 +162,18 @@ export const featuredProductsFixture = {
             {
               handle: "topo-lined-canvas-utility-cap",
               title: "Topo-Lined Canvas Utility Cap",
+              options: [
+                {
+                  name: "finish",
+                  values: ["matte", "weather-resistant", "breathable"],
+                  __typename: "ProductOption",
+                },
+                {
+                  name: "size",
+                  values: ["small", "medium", "large", "extra-large"],
+                  __typename: "ProductOption",
+                },
+              ],
               featuredImage: {
                 url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/f19b576cc8c845833762194272a822d7.png?v=14626304",
                 altText:

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney } from "./money";
+import { formatMoney, toAmount } from "./money";
 
 describe("formatMoney", () => {
   it("formats a whole amount with two decimals", () => {
@@ -25,5 +25,25 @@ describe("formatMoney", () => {
 
   it("follows the currency's own minor units", () => {
     expect(formatMoney({ amount: "1500.0", currencyCode: "JPY" })).toBe("¥1,500");
+  });
+});
+
+describe("toAmount", () => {
+  it.each([
+    ["249.0", 249],
+    ["25.5", 25.5],
+    ["0.0", 0],
+    ["1234", 1234],
+  ])("parses %s", (amount, expected) => {
+    expect(toAmount({ amount, currencyCode: "USD" })).toBe(expected);
+  });
+
+  // `Number("")` is 0, which would read as a free product rather than a missing price.
+  it.each([
+    ["", "blank"],
+    [" ", "whitespace"],
+    ["abc", "not a number"],
+  ])("rejects %s (%s)", (amount) => {
+    expect(toAmount({ amount, currencyCode: "USD" })).toBeNull();
   });
 });

@@ -19,7 +19,12 @@ export type CollectionSummary = Pick<
   image: Image | null;
 };
 
+// The option axes a product offers (`color`, `size`, `material`, `finish`), as the API
+// names them: lowercase, with inconsistent value casing. Facets are derived from these.
+export type ProductOption = Omit<ProductCardFragment["options"][number], "__typename">;
+
 export type ProductCard = Pick<ProductCardFragment, "handle" | "title"> & {
+  options: ProductOption[];
   image: Image | null;
   price: Money;
   compareAtPrice: Money | null;

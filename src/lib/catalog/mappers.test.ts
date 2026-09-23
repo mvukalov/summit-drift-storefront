@@ -44,6 +44,10 @@ describe("toProductCard", () => {
     expect(card).toStrictEqual({
       handle: "waterproof-wading-jacket-with-breathable-shell",
       title: product.title,
+      options: [
+        { name: "color", values: ["slate", "moss", "clay"] },
+        { name: "size", values: ["XS", "S", "M", "L"] },
+      ],
       image: {
         url: product.featuredImage?.url,
         altText: product.featuredImage?.altText,
@@ -93,6 +97,17 @@ describe("toProductCard", () => {
 
     expect(card.isOnSale).toBe(true);
     expect(card.compareAtPrice?.amount).toBe("150.0");
+  });
+
+  // Facets are derived from these option axes, so they have to survive the mapping
+  // in the API's own order — the values read XS, S, M, L, never sorted.
+  it("keeps the API's option order and drops __typename", () => {
+    const card = toProductCard(productByHandle("oversized-t-shirt"));
+
+    expect(card.options).toStrictEqual([
+      { name: "color", values: ["slate", "moss", "clay"] },
+      { name: "size", values: ["XS", "S", "M", "L"] },
+    ]);
   });
 
   it("maps a missing featured image to null", () => {

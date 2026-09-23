@@ -22,6 +22,12 @@ fragment CollectionSummary on Collection {
 fragment ProductCard on Product {
   handle
   title
+  # Facets are derived from these values (project overview §5.1): the API ignores
+  # filters, so the option axes a collection actually uses come from its products.
+  options {
+    name
+    values
+  }
   featuredImage {
     ...Image
   }
