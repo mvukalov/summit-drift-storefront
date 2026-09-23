@@ -22,6 +22,10 @@ export const collectionByHandleFixture = {
         {
           handle: "waterproof-wading-jacket-with-breathable-shell",
           title: "Waterproof Wading Jacket With Breathable Shell",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/d8ed96bd1d0432d1fa0cfe305622a3bd.png?v=14970910",
             altText:
@@ -44,6 +48,10 @@ export const collectionByHandleFixture = {
         {
           handle: "oversized-technical-nylon-jacket",
           title: "Oversized Technical Nylon Jacket",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/4d650e280976e479b9a8e6ca7adee4c3.png?v=14994393",
             altText:
@@ -66,6 +74,10 @@ export const collectionByHandleFixture = {
         {
           handle: "ripstop-shell-jacket-with-storm-guard",
           title: "Ripstop Shell Jacket with Storm Guard",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/feb471048906f9b986836d4d4a30578c.png?v=15035948",
             altText:
@@ -88,6 +100,10 @@ export const collectionByHandleFixture = {
         {
           handle: "technical-shell-jacket",
           title: "Technical Shell Jacket",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/20981296280d02d45bb4305190dca180.png?v=13667201",
             altText:
@@ -110,6 +126,10 @@ export const collectionByHandleFixture = {
         {
           handle: "oversized-t-shirt",
           title: "Oversized T-Shirt",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/3cdac0f19fdd762e90af69d5cdbcfc0c.png?v=13106692",
             altText:
@@ -132,6 +152,10 @@ export const collectionByHandleFixture = {
         {
           handle: "lightweight-urban-jacket",
           title: "Lightweight Urban Jacket",
+          options: [
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/9a3bcdd3ddf729be3bbe311c9aab1451.png?v=13118838",
             altText:
@@ -154,6 +178,10 @@ export const collectionByHandleFixture = {
         {
           handle: "oversized-outerwear-jacket",
           title: "Oversized Outerwear Jacket",
+          options: [
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/c44c8650f9f80d3b97b36e831a0a8877.png?v=13210840",
             altText:
@@ -176,6 +204,10 @@ export const collectionByHandleFixture = {
         {
           handle: "orange-red-streetwear-jacket",
           title: "Orange Red Streetwear Jacket",
+          options: [
+            { name: "color", values: ["slate", "moss", "clay"], __typename: "ProductOption" },
+            { name: "size", values: ["XS", "S", "M", "L"], __typename: "ProductOption" },
+          ],
           featuredImage: {
             url: "https://cdn.shopify.com/s/files/1/0926/5994/1398/files/b209feeaa227ee9941c969584dde7c04.png?v=13234016",
             altText:

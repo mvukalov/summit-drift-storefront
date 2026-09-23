@@ -8,6 +8,10 @@ const SIZES = "(min-width: 768px) 25vw, 50vw";
 const product: ProductCardData = {
   handle: "waterproof-wading-jacket-with-breathable-shell",
   title: "Waterproof Wading Jacket With Breathable Shell",
+  options: [
+    { name: "color", values: ["slate", "moss", "clay"] },
+    { name: "size", values: ["XS", "S", "M", "L"] },
+  ],
   image: {
     url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/d8ed96bd1d0432d1fa0cfe305622a3bd.png?v=14970910",
     altText: "Technical waterproof wading jacket",

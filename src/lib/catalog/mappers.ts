@@ -5,7 +5,7 @@ import type {
   MoneyFragment,
   ProductCardFragment,
 } from "@/lib/graphql/generated/graphql";
-import type { CollectionSummary, Image, Money, ProductCard } from "@/types/catalog";
+import type { CollectionSummary, Image, Money, ProductCard, ProductOption } from "@/types/catalog";
 import type { MenuItem } from "@/types/navigation";
 
 // Fields are copied explicitly so GraphQL's `__typename` never reaches domain objects.
@@ -16,6 +16,10 @@ function toMoney(money: MoneyFragment): Money {
 function toImage(image: ImageFragment | null): Image | null {
   if (!image) return null;
   return { url: image.url, altText: image.altText, width: image.width, height: image.height };
+}
+
+function toProductOption(option: ProductCardFragment["options"][number]): ProductOption {
+  return { name: option.name, values: [...option.values] };
 }
 
 function isGreater(a: Money, b: Money): boolean {
@@ -50,6 +54,7 @@ export function toProductCard(product: ProductCardFragment): ProductCard {
   return {
     handle: product.handle,
     title: product.title,
+    options: product.options.map(toProductOption),
     image: toImage(product.featuredImage),
     price,
     compareAtPrice,

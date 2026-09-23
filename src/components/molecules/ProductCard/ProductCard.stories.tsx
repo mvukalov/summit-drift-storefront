@@ -10,6 +10,10 @@ const meta = {
     product: {
       handle: "performance-technical-tee",
       title: "Performance Technical Tee",
+      options: [
+        { name: "size", values: ["S", "M", "L"] },
+        { name: "color", values: ["charcoal", "sand", "fern", "stone"] },
+      ],
       image: {
         url: "https://cdn.shopify.com/s/files/1/0926/4031/3366/files/397c28136fe9eeff79e6bad8d5329065.png?v=13678502",
         altText: "Performance technical tee laid flat",
