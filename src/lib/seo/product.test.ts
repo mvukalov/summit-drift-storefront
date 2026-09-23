@@ -91,3 +91,36 @@ describe("buildProductJsonLd", () => {
     expect(() => JSON.parse(JSON.stringify(jsonLd))).not.toThrow();
   });
 });
+
+// Degenerate products the API does not produce today, but the builder must still emit
+// valid JSON-LD rather than `"sku": null` or an aggregate with no prices.
+describe("buildProductJsonLd with incomplete data", () => {
+  it("omits sku entirely when the variant has none", () => {
+    const [first] = product.variants;
+    if (!first) throw new Error("Fixture has no variants");
+
+    const jsonLd = buildProductJsonLd(withVariants([{ ...first, sku: null }]), PATH);
+    const offers = jsonLd.offers as Record<string, unknown>;
+
+    expect(jsonLd).not.toHaveProperty("sku", null);
+    expect(jsonLd.sku).toBeUndefined();
+    expect(offers.sku).toBeUndefined();
+  });
+
+  it("omits the price span for a product with no variants", () => {
+    const offers = buildProductJsonLd(withVariants([]), PATH).offers as Record<string, unknown>;
+
+    expect(offers["@type"]).toBe("AggregateOffer");
+    expect(offers.offerCount).toBe(0);
+    expect(offers.lowPrice).toBeUndefined();
+    expect(offers.highPrice).toBeUndefined();
+    expect(offers.availability).toBe("https://schema.org/OutOfStock");
+  });
+
+  it("still serializes cleanly with no variants", () => {
+    const jsonLd = buildProductJsonLd(withVariants([]), PATH);
+
+    expect(() => JSON.parse(JSON.stringify(jsonLd))).not.toThrow();
+    expect(JSON.stringify(jsonLd)).not.toContain("null");
+  });
+});

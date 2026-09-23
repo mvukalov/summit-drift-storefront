@@ -32,6 +32,22 @@ describe("ProductGallery", () => {
     expect(main).toHaveAttribute("height", "1344");
   });
 
+  // Collection images report null dimensions; a product image could too. The fallback keeps
+  // the aspect ratio reserved so a missing size can never cause layout shift.
+  it("falls back to the catalog's native dimensions when the API omits them", () => {
+    const sizeless: Image = {
+      url: "https://cdn.example.com/x.png",
+      altText: "X",
+      width: null,
+      height: null,
+    };
+    render(<ProductGallery images={[sizeless]} title="Wading Jacket" />);
+    const main = screen.getByRole("img", { name: "X" });
+
+    expect(main).toHaveAttribute("width", "768");
+    expect(main).toHaveAttribute("height", "1344");
+  });
+
   it("switches the main image when a thumbnail is chosen", async () => {
     const user = userEvent.setup();
     render(<ProductGallery images={IMAGES} title="Wading Jacket" />);

@@ -288,4 +288,12 @@ describe("getProduct", () => {
 
     await expect(getProduct("waterproof-wading-jacket-with-breathable-shell")).rejects.toThrow();
   });
+
+  // A response with neither data nor errors is malformed. Returning null would turn a real
+  // product into a 404, so it has to throw and reach the error boundary instead.
+  it("rejects on a response carrying no data at all", async () => {
+    server.use(shop.query(ProductByHandleDocument, () => HttpResponse.json({ data: null })));
+
+    await expect(getProduct("waterproof-wading-jacket-with-breathable-shell")).rejects.toThrow();
+  });
 });

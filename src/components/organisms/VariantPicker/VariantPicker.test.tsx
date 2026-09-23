@@ -126,6 +126,17 @@ describe("VariantPicker", () => {
     });
   });
 
+  // A half-specified link leaves an axis unchosen; the legend must not print "undefined".
+  it("renders an axis with nothing chosen without inventing a label", () => {
+    renderPicker({ selection: { color: "slate" } });
+
+    const sizeGroup = screen.getByRole("group", { name: /Size/ });
+
+    expect(sizeGroup).toHaveTextContent(/^Size/);
+    expect(sizeGroup.textContent).not.toMatch(/undefined|null/);
+    expect(screen.getByRole("radio", { name: /^XS/ })).not.toBeChecked();
+  });
+
   it("is navigable by keyboard", async () => {
     const user = userEvent.setup();
     renderPicker();

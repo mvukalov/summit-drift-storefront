@@ -95,6 +95,7 @@ export function resolveVariant(
 
   const matching = variants.filter((variant) => matchesSelection(variant, selection));
 
+  // `variants` is non-empty here, so the fallback always resolves to something.
   return preferAvailable(matching) ?? preferAvailable(variants) ?? null;
 }
 

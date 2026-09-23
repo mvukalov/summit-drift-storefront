@@ -126,6 +126,35 @@ describe("ProductPage", () => {
     });
   });
 
+  // The API always returns variants and images today. If it ever stopped, the page has to
+  // degrade rather than crash: no picker, nothing to buy, but a readable product.
+  describe("a product with no variants and no images", () => {
+    function bare() {
+      return { ...fixture(), variants: [], images: [] };
+    }
+
+    it("still renders the title", async () => {
+      mockedGetProduct.mockResolvedValue(bare());
+      await renderPage();
+
+      expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    });
+
+    it("disables add to cart, because there is nothing purchasable", async () => {
+      mockedGetProduct.mockResolvedValue(bare());
+      await renderPage();
+
+      expect(screen.getByRole("button", { name: "Out of stock" })).toBeDisabled();
+    });
+
+    it("omits the OG image rather than emitting an empty one", async () => {
+      mockedGetProduct.mockResolvedValue(bare());
+      const metadata = await generateMetadata(props());
+
+      expect(metadata.openGraph?.images).toBeUndefined();
+    });
+  });
+
   describe("structured data", () => {
     it("renders Product and BreadcrumbList blocks", async () => {
       const { container } = render(await ProductPage(props()));
