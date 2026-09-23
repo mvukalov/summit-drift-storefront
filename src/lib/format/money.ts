@@ -23,3 +23,17 @@ export function toAmount(money: Money): number | null {
   const amount = Number(money.amount);
   return Number.isFinite(amount) ? amount : null;
 }
+
+/**
+ * Formats a whole-currency amount without cents, e.g. `50` → `$50`.
+ *
+ * Used for price-facet bounds, which are whole dollars by construction, so the trailing
+ * `.00` that `formatMoney` prints would only add noise to a filter label.
+ */
+export function formatAmount(amount: number, currencyCode: string): string {
+  return new Intl.NumberFormat(LOCALE, {
+    style: "currency",
+    currency: currencyCode,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}

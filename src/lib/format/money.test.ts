@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, toAmount } from "./money";
+import { formatAmount, formatMoney, toAmount } from "./money";
 
 describe("formatMoney", () => {
   it("formats a whole amount with two decimals", () => {
@@ -45,5 +45,19 @@ describe("toAmount", () => {
     ["abc", "not a number"],
   ])("rejects %s (%s)", (amount) => {
     expect(toAmount({ amount, currencyCode: "USD" })).toBeNull();
+  });
+});
+
+describe("formatAmount", () => {
+  it("formats a whole-dollar price-facet bound without cents", () => {
+    expect(formatAmount(50, "USD")).toBe("$50");
+  });
+
+  it("groups thousands", () => {
+    expect(formatAmount(1500, "USD")).toBe("$1,500");
+  });
+
+  it("uses the currency it is given", () => {
+    expect(formatAmount(50, "EUR")).toBe("€50");
   });
 });
