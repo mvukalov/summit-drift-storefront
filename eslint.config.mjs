@@ -21,6 +21,37 @@ const eslintConfig = defineConfig([
     "storybook-static/**",
   ]),
   ...storybook.configs["flat/recommended"],
+  // Security guardrails for API-supplied HTML (coding standards §Security).
+  // `react` is already registered by eslint-config-next, so only the rules are added here.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      // Writing markup into the DOM is allowed in exactly two components, each of which
+      // opts in with a scoped inline disable: `RichText` (sanitized `descriptionHtml`)
+      // and `JsonLd` (JSON with `<` escaped). Anywhere else this is a bug.
+      "react/no-danger": "error",
+      // The sanitizer must stay server-side and behind one module. A `'use client'` file
+      // importing it directly would ship sanitize-html and its 17 transitive packages to
+      // the browser, and would also bypass `RichText` as the single choke point.
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "sanitize-html",
+              message:
+                "Import from '@/lib/sanitize/rich-text' instead. Only src/lib/sanitize/ may depend on sanitize-html directly.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The one module that is allowed to wrap the library.
+    files: ["src/lib/sanitize/**/*.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
   // Must stay last: turns off rules that conflict with Prettier.
   prettier,
 ]);

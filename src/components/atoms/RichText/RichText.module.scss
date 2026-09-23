@@ -1,0 +1,28 @@
+// Sanitized markup cannot carry CSS Module class names, so its children are styled by
+// element from the wrapper. Only `p`, `ul` and `li` can reach the DOM (src/lib/sanitize),
+// so those are the only selectors needed.
+.richText {
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+
+  p,
+  ul {
+    margin-block-end: var(--space-3);
+  }
+
+  ul {
+    padding-inline-start: var(--space-4);
+    list-style: disc;
+  }
+
+  li {
+    margin-block-end: var(--space-1);
+  }
+
+  // The block owns its outer spacing through the layout around it, not through a trailing
+  // margin on its last child.
+  > :last-child {
+    margin-block-end: 0;
+  }
+}
