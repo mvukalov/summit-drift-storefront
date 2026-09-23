@@ -1,0 +1,91 @@
+@use "../../../styles/breakpoints" as *;
+
+.trigger {
+  gap: var(--space-2);
+
+  // From lg the sidebar shows the same controls in the page itself.
+  @include bp(lg) {
+    display: none;
+  }
+}
+
+.dialog {
+  // Leaves a strip of backdrop as a tap-to-close area, like the header's mobile nav.
+  width: min(100% - var(--space-6), 24rem);
+  max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 0;
+  margin: 0 auto 0 0;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 0;
+  box-shadow: var(--shadow-lg);
+
+  // The global reduced-motion rule shortens this animation to an instant change.
+  &[open] {
+    animation: slideIn 200ms ease-out;
+  }
+
+  &::backdrop {
+    background-color: color-mix(in srgb, var(--color-surface-inverse) 50%, transparent);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Fills the dialog, so only backdrop clicks land on the <dialog> element itself.
+.content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.top {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.title {
+  font-size: var(--text-h3-size);
+}
+
+.close {
+  width: var(--size-touch-target);
+  padding: 0;
+}
+
+// Only the controls scroll, so the footer's actions stay reachable with a long facet list.
+.body {
+  flex: 1;
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-divider);
+
+  // The drawer is narrow; without this the labels wrap mid-phrase ("Clear / all").
+  > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}

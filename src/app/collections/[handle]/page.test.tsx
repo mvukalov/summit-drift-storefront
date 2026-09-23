@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import CollectionPage, { generateMetadata } from "./page";
 import { getCollection } from "@/lib/catalog/fetchers";
@@ -22,17 +22,19 @@ vi.mock("@/lib/catalog/fetchers", () => ({
 
 // notFound() throws in Next; the mock keeps that contract so the page can't fall through.
 const notFoundError = new Error("NEXT_NOT_FOUND");
+const push = vi.fn();
 vi.mock("next/navigation", () => ({
   notFound: () => {
     throw notFoundError;
   },
+  // The toolbar, sidebar and drawer are rendered for real, so they need a router.
+  useRouter: () => ({ push }),
 }));
 
-vi.mock("./SortControl", () => ({
-  SortControl: ({ value, basePath }: { value: string; basePath: string }) => (
-    <div data-testid="sort-control" data-value={value} data-base-path={basePath} />
-  ),
-}));
+/** The desktop sidebar's copy of the facet controls; the drawer holds a second one. */
+function sidebar() {
+  return within(screen.getByRole("complementary", { name: "Filters" }));
+}
 
 function props(handle = HANDLE, searchParams: Record<string, string | string[]> = {}) {
   return {
@@ -42,6 +44,7 @@ function props(handle = HANDLE, searchParams: Record<string, string | string[]> 
 }
 
 beforeEach(() => {
+  push.mockClear();
   vi.mocked(getCollection).mockResolvedValue(fixtureResult());
 });
 
@@ -114,7 +117,82 @@ describe("Collection page", () => {
 
     expect(screen.getByText(/no products in this collection/i)).toBeVisible();
     expect(screen.queryByRole("article")).not.toBeInTheDocument();
-    expect(screen.getByText("0 products")).toBeVisible();
+    // Filters over an empty collection would offer nothing to filter.
+    expect(screen.queryByRole("complementary", { name: "Filters" })).not.toBeInTheDocument();
+  });
+
+  describe("facets", () => {
+    it("renders the collection's own axes in the sidebar", async () => {
+      render(await CollectionPage(props()));
+
+      expect(sidebar().getByRole("group", { name: "Color" })).toBeInTheDocument();
+      expect(sidebar().getByRole("group", { name: "Size" })).toBeInTheDocument();
+    });
+
+    // Every product in this collection offers every colour and size, so `sale` is the
+    // facet that actually narrows it: 3 of the 8 are discounted.
+    it("filters the grid by the facets in the URL", async () => {
+      render(await CollectionPage(props(HANDLE, { sale: "1" })));
+
+      expect(screen.getAllByRole("article")).toHaveLength(3);
+    });
+
+    it("counts the filtered products, not the collection", async () => {
+      render(await CollectionPage(props(HANDLE, { sale: "1" })));
+
+      expect(screen.getByText("3 products")).toBeVisible();
+    });
+
+    it("keeps the grid in the order the API sorted it", async () => {
+      render(await CollectionPage(props(HANDLE, { sale: "1" })));
+
+      expect(
+        screen.getAllByRole("heading", { level: 3 }).map((card) => card.textContent),
+      ).toStrictEqual([
+        "Waterproof Wading Jacket With Breathable Shell",
+        "Oversized T-Shirt",
+        "Oversized Outerwear Jacket",
+      ]);
+    });
+
+    it("shows a chip per active filter", async () => {
+      render(await CollectionPage(props(HANDLE, { color: "slate", sale: "1" })));
+
+      const chips = within(screen.getByRole("list", { name: "Active filters" }));
+      expect(chips.getAllByRole("button").map((chip) => chip.textContent)).toStrictEqual([
+        "Slate",
+        "On sale",
+      ]);
+    });
+
+    // A stale or hand-edited URL must still render the collection (phase 1's contract).
+    it("ignores a value the collection does not offer", async () => {
+      render(await CollectionPage(props(HANDLE, { color: "ultraviolet" })));
+
+      expect(screen.getAllByRole("article")).toHaveLength(8);
+      expect(screen.queryByRole("list", { name: "Active filters" })).not.toBeInTheDocument();
+    });
+
+    // A collection with no products and a filter that matches none are different problems.
+    // The collection's prices are 25 – 485 with a gap between 249 and 485, so this range
+    // is valid, survives clamping, and matches nothing.
+    it("distinguishes no matches from an empty collection", async () => {
+      render(await CollectionPage(props(HANDLE, { price: "300-400" })));
+
+      expect(screen.getByText("No products match these filters.")).toBeVisible();
+      expect(screen.queryByText(/no products in this collection/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Clear all filters" })).toHaveAttribute("href", PATH);
+      expect(screen.getByText("0 products")).toBeVisible();
+    });
+
+    it("keeps the sort in the way back from an empty result", async () => {
+      render(await CollectionPage(props(HANDLE, { price: "300-400", sort: "price-asc" })));
+
+      expect(screen.getByRole("link", { name: "Clear all filters" })).toHaveAttribute(
+        "href",
+        `${PATH}?sort=price-asc`,
+      );
+    });
   });
 
   it("404s on an unknown handle", async () => {
@@ -138,9 +216,7 @@ describe("Collection page", () => {
   it("hands the resolved sort to the control, so it matches the grid", async () => {
     render(await CollectionPage(props(HANDLE, { sort: "best-selling" })));
 
-    const control = screen.getByTestId("sort-control");
-    expect(control).toHaveAttribute("data-value", "best-selling");
-    expect(control).toHaveAttribute("data-base-path", PATH);
+    expect(screen.getByRole("combobox", { name: "Sort:" })).toHaveValue("best-selling");
   });
 
   it("renders a BreadcrumbList from Home to this collection", async () => {
@@ -174,6 +250,8 @@ describe("Collection page metadata", () => {
     ["no params", {}],
     ["a sort param", { sort: "price-asc" }],
     ["an invalid sort param", { sort: "cheapest" }],
+    ["facet params", { color: "moss,clay", sale: "1", price: "25-200" }],
+    ["facets and sort together", { color: "moss", sort: "price-asc" }],
   ])("canonicalises to the clean collection URL with %s", async (_label, searchParams) => {
     const metadata = await generateMetadata(props(HANDLE, searchParams));
 

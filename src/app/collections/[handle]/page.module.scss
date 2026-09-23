@@ -15,29 +15,40 @@
   flex-direction: column;
   gap: var(--space-3);
   max-width: 45rem;
+  margin-bottom: var(--space-4);
 }
 
 .description {
   color: var(--color-text-muted);
 }
 
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  align-items: center;
-  justify-content: space-between;
-  padding-block: var(--space-4);
-  margin-block: var(--space-4);
-  border-block: 1px solid var(--color-divider);
+// One column until the filter sidebar appears beside the grid at lg.
+.layout {
+  display: grid;
+  gap: var(--space-5);
+
+  @include bp(lg) {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    gap: var(--space-6);
+  }
 }
 
-.count {
-  font-size: var(--text-small-size);
-  color: var(--color-text-muted);
+// Bounded so the toolbar and grid can't overflow the layout's column.
+.main {
+  min-width: 0;
 }
 
 .empty {
+  padding-block: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
   padding-block: var(--space-6);
   color: var(--color-text-muted);
   text-align: center;

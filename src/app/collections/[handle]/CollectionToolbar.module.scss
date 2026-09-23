@@ -1,0 +1,59 @@
+@use "../../../styles/breakpoints" as *;
+
+// Count on its own line, then the controls, then the chips — the order the mockups show at
+// both widths. From lg the count and the controls share a row, since the sidebar has taken
+// the filter trigger away.
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-block: 1px solid var(--color-divider);
+
+  @include bp(lg) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+
+  @include bp(lg) {
+    justify-content: flex-end;
+  }
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+
+  @include bp(lg) {
+    grid-column: 1 / -1;
+  }
+}
+
+.chipList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.clear {
+  text-decoration: underline;
+}
