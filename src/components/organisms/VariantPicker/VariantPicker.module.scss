@@ -1,0 +1,97 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 0;
+  padding: 0;
+}
+
+.legend {
+  display: flex;
+  gap: var(--space-2);
+  padding: 0;
+  font-size: var(--text-small-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+.chosen {
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+}
+
+.values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.value {
+  position: relative; // anchors the input that covers this label
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+
+  &:hover {
+    border-color: var(--color-text-muted);
+  }
+
+  // The visible focus ring has to follow the input, which is visually hidden.
+  &:has(.input:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+.selected {
+  border-color: var(--color-text);
+  box-shadow: inset 0 0 0 1px var(--color-text);
+}
+
+// Sold out stays selectable: it is dimmed and struck through, and "Add to cart" is what
+// turns off. Never colour alone — the label carries a line through it too.
+.unavailable {
+  color: var(--color-text-muted);
+
+  .label {
+    text-decoration: line-through;
+  }
+}
+
+// Covers the whole label rather than being clipped to nothing, so the input itself is the
+// click target and stays in the accessibility tree and the tab order. Same technique as
+// FacetGroup and Swatch; clipping it instead leaves the colour dot intercepting the click.
+//
+// `inset: -1px` reaches over the label's border, so the hit area is the full 44px the
+// label reserves rather than the 42px padding box. No width/height: an explicit size would
+// override the stretch and pin the box back to 42px.
+.input {
+  position: absolute;
+  inset: -1px;
+  margin: 0;
+  cursor: inherit;
+  opacity: 0;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 1.25em;
+  height: 1.25em;
+  background-color: var(--variant-dot-color);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.label {
+  font-size: var(--text-small-size);
+}

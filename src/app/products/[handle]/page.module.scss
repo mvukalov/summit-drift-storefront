@@ -1,0 +1,53 @@
+@use "../../../styles/breakpoints" as *;
+
+// Page gutters match the header, footer, Home and the collection page.
+.page {
+  display: grid;
+  gap: var(--space-5);
+  padding-block: var(--space-5) var(--space-6);
+  padding-inline: var(--space-3);
+
+  @include bp(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+    padding-inline: var(--space-4);
+  }
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+}
+
+.priceRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.sectionTitle {
+  margin-block: 0 var(--space-2);
+  font-size: var(--font-size-lg);
+}
+
+.description {
+  border-top: 1px solid var(--color-border);
+  padding-block-start: var(--space-4);
+}
+
+.back {
+  margin: 0;
+  font-size: var(--text-small-size);
+}

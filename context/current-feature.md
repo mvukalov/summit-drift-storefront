@@ -37,14 +37,27 @@ In Progress
 
 **Phase 3 — PDP UI**
 
-- [ ] `src/app/products/[handle]/page.tsx` (Server Component) + `loading.tsx` + `error.tsx`
-- [ ] Gallery with **intrinsic** `width`/`height` `next/image` (not `fill` — first feature to need this; verify against Next 16 docs, don't assume `ProductImage`'s pattern transfers)
-- [ ] Variant picker: `Swatch`es grouped per option in `<fieldset>`/`role="radiogroup"`, selection in URL state (Zod-validated), updates price + image + availability
-- [ ] `QuantityStepper` molecule: controlled, `value`/`onChange`/`min`/`max?`, min 1
-- [ ] Inert "Add to cart" `Button` — present, styled, keyboard-operable, no cart behaviour
-- [ ] Out-of-stock state: disables "Add to cart" **with visible text**, not colour or a bare disabled button
-- [ ] `Product` + `BreadcrumbList` JSON-LD via existing `JsonLd`; `generateMetadata` with canonical + OG image
-- [ ] Component/RTL tests, Storybook stories, manual dev-server check on a real product
+- [x] `src/app/products/[handle]/page.tsx` (Server Component) + `loading.tsx` + `error.tsx`
+- [x] `ProductGallery` with **intrinsic** `width`/`height` (Next 16 docs read first: intrinsic dims reserve the ratio, `sizes` is still needed, `priority` is deprecated in favour of `loading="eager"` + `fetchPriority`)
+- [x] `VariantPicker`: one `<fieldset>` radio group per axis, selection in the URL, updates price + image + availability. Pure logic in new `src/lib/variants/selection.ts` (33 tests)
+- [x] `QuantityStepper` molecule: controlled, 1–10, draft state so the field can be empty mid-edit
+- [x] Inert "Add to cart" — real enabled button when purchasable, so the disabled state means out of stock and nothing else
+- [x] Out-of-stock: disabled button **plus** a text explanation
+- [x] `Product` + `BreadcrumbList` JSON-LD (`src/lib/seo/product.ts`, `AggregateOffer` for multi-variant, plain `Offer` for one); `generateMetadata` with canonical + OG image
+- [x] Component/RTL tests, Storybook stories, real-browser verification
+
+**Phase 3 verification (done in a production build + real browser)**
+
+- [x] axe **0 violations** at 1280 / 768 / 375, and after a client-side variant navigation. No horizontal overflow at any width.
+- [x] Variant URL round-trip: clicking Moss → `?color=moss&size=XS`, price $249.00 → $261.45, legend and checked radios follow, scroll position unchanged.
+- [x] Touch targets 44px (swatches, stepper buttons, Add to cart). Console clean.
+- [x] `notFound()` returns HTTP **200, not 404** — and that is documented Next 16 behaviour, not a bug: 200 for streamed responses (these routes have `loading.tsx`), 404 for non-streamed. `notFound()` injects `<meta name="robots" content="noindex">`, which is present, so the SEO risk is covered. The collection route behaves identically.
+
+**Three real-browser findings the jsdom tests could not catch**
+
+1. The visually-hidden radio was clipped to 1px and sat under the colour dot, which intercepted the click. Replaced with the project's existing pattern (input covers the label, `opacity: 0`) — as used by `FacetGroup` and `Swatch`.
+2. Touch target measured 42px, not 44: `inset: 0` stops at the padding box, and an explicit `width`/`height: 100%` overrode the stretch. Fixed with `inset: -1px` and no explicit size.
+3. Eager thumbnails made the browser preload an image candidate it never used. Thumbnails are now lazy; one preload instead of two.
 
 ## Notes
 
