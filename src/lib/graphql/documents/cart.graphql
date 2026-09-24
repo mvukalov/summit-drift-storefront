@@ -1,0 +1,120 @@
+# The cart id is a bearer token (it carries a `?key=`), so it never reaches the browser:
+# every document here is executed by a Server Action or a Server Component that reads the
+# id from an httpOnly cookie (docs/cart.md, decision 1).
+
+# `lines` returns a BaseCartLineConnection, so the fragment is on the interface rather than
+# on CartLine. `merchandise` is a union of one member, hence the inline fragment.
+fragment CartLine on BaseCartLine {
+  id
+  quantity
+  cost {
+    # Verified equal to `merchandise.price` on 27 real lines (2026-09-24) and typed
+    # non-null, but the mapper still falls back — see src/lib/cart/mappers.ts.
+    amountPerQuantity {
+      ...Money
+    }
+    totalAmount {
+      ...Money
+    }
+  }
+  merchandise {
+    ... on ProductVariant {
+      id
+      title
+      selectedOptions {
+        name
+        value
+      }
+      image {
+        ...Image
+      }
+      price {
+        ...Money
+      }
+      # The line's display name. The variant's own `title` is the option summary
+      # ("slate / XS"), which the drawer renders from `selectedOptions` instead.
+      product {
+        title
+      }
+    }
+  }
+}
+
+fragment Cart on Cart {
+  id
+  totalQuantity
+  # Mocked and constant on mock.shop (`.../checkout`), not cart-specific.
+  checkoutUrl
+  cost {
+    subtotalAmount {
+      ...Money
+    }
+  }
+  # This catalog's carts hold at most a handful of lines; one page covers them.
+  lines(first: 100) {
+    nodes {
+      ...CartLine
+    }
+  }
+}
+
+fragment CartUserError on CartUserError {
+  code
+  field
+  message
+}
+
+# An expired, dead or malformed id returns `cart: null` with no GraphQL error, so recovery
+# is a plain null check. Always executed with `cache: "no-store"`.
+query CartById($id: ID!) {
+  cart(id: $id) {
+    ...Cart
+  }
+}
+
+mutation CartCreate($input: CartInput!) {
+  cartCreate(input: $input) {
+    cart {
+      ...Cart
+    }
+    userErrors {
+      ...CartUserError
+    }
+  }
+}
+
+# Only ever used for a variant that is not yet in the cart: this mutation is additive, so an
+# existing line is changed with CartLinesUpdate instead, which cannot overshoot the ceiling.
+mutation CartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+  cartLinesAdd(cartId: $cartId, lines: $lines) {
+    cart {
+      ...Cart
+    }
+    userErrors {
+      ...CartUserError
+    }
+  }
+}
+
+# Absolute quantity, so it is safe to retry. `quantity: 0` removes the line.
+mutation CartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+  cartLinesUpdate(cartId: $cartId, lines: $lines) {
+    cart {
+      ...Cart
+    }
+    userErrors {
+      ...CartUserError
+    }
+  }
+}
+
+mutation CartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+  cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+    cart {
+      ...Cart
+    }
+    userErrors {
+      ...CartUserError
+    }
+  }
+}
