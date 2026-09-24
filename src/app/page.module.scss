@@ -12,13 +12,9 @@
 .hero {
   @extend %gutters;
 
-  display: grid;
-  gap: var(--space-5);
   padding-block: var(--space-5) var(--space-6);
 
   @include bp(md) {
-    grid-template-columns: 3fr 1fr;
-    align-items: center;
     padding-block: var(--space-6);
   }
 }
@@ -48,16 +44,6 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-2);
-}
-
-// Capped on mobile so a 4:7 image doesn't fill several screens; keep HERO_IMAGE_SIZES in sync.
-.heroMedia {
-  width: 100%;
-  max-width: 20rem;
-
-  @include bp(md) {
-    max-width: none;
-  }
 }
 
 .section {
