@@ -8,7 +8,12 @@ import type { Cart } from "@/types/cart";
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 10;
 
-export type AddRefusal = "at-maximum";
+// "invalid-quantity": the request itself is out of range (0, negative), independent of
+// anything already in the cart. "at-maximum": the request is a normal add, but the line
+// would end up over the ceiling. Both produce the same user-facing message today, but the
+// distinction matters for whoever reads `reason` next — collapsing them under "at-maximum"
+// would say a request for 0 is refused because the line is full, which it may not be.
+export type AddRefusal = "invalid-quantity" | "at-maximum";
 
 export type AddCheck =
   | { ok: true; quantity: number }
@@ -41,7 +46,10 @@ export function canAddToLine(cart: Cart, variantId: string, requested: number): 
   const current = cart.lines.find((line) => line.variantId === variantId)?.quantity ?? 0;
   const total = current + requested;
 
-  if (requested < MIN_QUANTITY || total > MAX_QUANTITY) {
+  if (requested < MIN_QUANTITY) {
+    return { ok: false, reason: "invalid-quantity", current };
+  }
+  if (total > MAX_QUANTITY) {
     return { ok: false, reason: "at-maximum", current };
   }
   return { ok: true, quantity: total };

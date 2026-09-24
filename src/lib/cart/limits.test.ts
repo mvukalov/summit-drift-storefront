@@ -112,9 +112,17 @@ describe("canAddToLine", () => {
     });
   });
 
-  it.each([0, -1])("refuses a request of %i", (requested) => {
-    expect(canAddToLine(emptyCart, VARIANT, requested).ok).toBe(false);
-  });
+  it.each([0, -1])(
+    'refuses a request of %i as an invalid quantity, not "at maximum"',
+    (requested) => {
+      // Distinct from the ceiling refusal: a request of 0 isn't refused because the line is
+      // full, and collapsing the two under one reason would say that it is.
+      expect(canAddToLine(emptyCart, VARIANT, requested)).toMatchObject({
+        ok: false,
+        reason: "invalid-quantity",
+      });
+    },
+  );
 
   it("reports what the line already holds, so the message can be specific", () => {
     const result = canAddToLine(cartWith(VARIANT, 7), VARIANT, 9);
