@@ -1,18 +1,70 @@
-# Current Feature
+# Current Feature: Cart
 
 ## Status
 
-Not Started
+In Review
 
 ## Goals
 
 <!-- Checkable bullet points of what success looks like -->
 
-- [ ]
+- [x] Baseline: measure and record LCP + Lighthouse perf for `/` **before** any implementation
+- [x] `src/lib/graphql/documents/cart.graphql`: `cart(id)` query, `cartCreate`, `cartLinesAdd/Update/Remove`, one shared cart fragment; `npm run codegen` output committed
+- [x] `src/types/cart.ts`: domain `Cart` / `CartLine` incl. approved `CartLine.unitPrice`
+- [x] `src/lib/cart/cookie.ts` (`server-only`): `cart_id` cookie — httpOnly, `sameSite: "lax"`, `secure` in prod, `path: "/"`, 7-day `maxAge`, written only on cart creation
+- [x] `src/lib/cart/mappers.ts`: cart fragment → domain `Cart`, falling back to `merchandise.price` when `cost.amountPerQuantity` is null
+- [x] `src/lib/cart/limits.ts`: `MIN_QUANTITY`/`MAX_QUANTITY` (1–10), `clampQuantity`, `canAddToLine` as the single guard shared by client and server
+- [x] `src/lib/cart/reducer.ts`: pure `cartReducer(cart, intent)` — `add`, `setQuantity`, `remove`; no React, no GraphQL, never mutates its input
+- [x] `src/lib/cart/actions.ts` (`"use server"`): `addToCart`, `updateCartLine`, `removeCartLine` returning `{ ok: true; cart } | { ok: false; error }`; cart id never from the client; `userErrors` mapped to friendly text; dead-cart recovery
+- [x] `CartProvider` (client): `useState(initialCart)` base + `useOptimistic(cart, cartReducer)` for display; base advances only on `ok: true`; ignores later `initialCart` changes
+- [x] Header cart count server-rendered from the cookie, `aria-live="polite"`, no CLS (badge is positioned over the icon). **The `<Suspense>` wrapper is deliberately not implemented** — accepted by the architect on 2026-09-24, because streaming it requires cart state outside React context. Cost measured and recorded in `docs/cart.md` and as a README trade-off; Cache Components stay in the performance phase.
+- [x] `CartDrawer` organism: lines, quantity stepper, remove, subtotal, checkout link, empty state; `useModalDialog` (third consumer)
+- [x] PDP "Add to cart" wired to `addToCart`; opens the drawer and moves focus into it on success
+- [x] Stepper: optimistic update on every click, one network send 300 ms after the settled value; `QuantityStepper` extended with `max = MAX_QUANTITY` (PDP capped at 10 too)
+- [x] Overflow on add refused outright (at 10, or 8 + 5) — no clamping, no partial add; instant client refusal, re-checked server-side
+- [x] Tests: unit (`src/lib/cart/` at **97%**), component (optimistic, rollback, refusal, debounce), Storybook stories for `CartDrawer` + header badge; 600 → 708 tests
+- [x] **E2E deferred to `e2e-and-a11y`** — Playwright is deliberately not installed (architect, 2026-09-24). Every case from the spec is carried into `context/new-feature-list.md`, including the raw-server-HTML count assertion, and each was verified manually in Chromium in the meantime.
+- [x] README trade-off recording the reversal of `apollo-nextjs.md` decision 4, cross-tab sync note
+- [x] After: LCP for `/` re-measured and both numbers recorded
 
 ## Notes
 
 <!-- Constraints, decisions, links to specs and research docs -->
+
+### Outcome (2026-09-24)
+
+**Architect's decisions on the two open questions (2026-09-24):** the `<Suspense>` deviation is accepted with its cost recorded; Playwright is not installed and the E2E cases move to `context/new-feature-list.md`. Both Apollo lessons are written into `docs/apollo-nextjs.md` ("Learned in use"). `/`'s LCP above 2.5 s is pre-existing and is recorded as input for the performance phase.
+
+- **All gates pass:** lint, typecheck, format, 708 tests (600 → 708), production build. `lib/cart` coverage 97%.
+- **Two real bugs the tests/browser caught, not review:**
+  1. Apollo's `query` shortcut must not be used inside a Server Action (it builds a client per call); actions now create one client via `getClient()` and thread it through.
+  2. **`possibleTypes` was missing**, so a cart read back through Apollo's normalized cache lost _every_ field except `__typename` — `CartLine` is a fragment on the `BaseCartLine` interface. Fixed in `graphql/config.ts` + a regression test that asserts the failure mode.
+- **Three browser-only findings:** the stepper's label rendered visibly in the drawer (fixed with a `labelHidden` prop on `QuantityStepper`); a product with no variants silently lost its "Out of stock" button (restored); the stale production server on port 3000 was masking the dev server.
+- **Verified in Chromium:** count correct in raw server HTML with only a cookie and no JS (`Cart, 5 items`); 5 rapid clicks → every intermediate value on screen, **1** request; refusal at the ceiling → **0** requests; reload survives; merge-on-add gives one line; newest-first order; axe **0 violations** (populated, empty, 375/1280); all touch targets ≥44px.
+- **Risk 6 answered:** the extra read on add-to-existing costs nothing measurable (517 ms vs 565 ms for the single-call create path).
+- **Verify-first answers:** `QuantityStepper` already commits per click, so the debounce belongs in the consumer and the stepper needed no rework; `cost.amountPerQuantity` was non-null and equal to `merchandise.price` on **27 real lines** and is non-null in the schema, so the mandated fallback is unreachable and is covered synthetically (the PR #16 precedent).
+- **Deviations from the spec, each with a reason:**
+  - `<Suspense>` around the cart read — not implemented; accepted by the architect with the cost recorded.
+  - E2E — not written; Playwright stays out and the cases moved to `context/new-feature-list.md`.
+  - Component tests mock **the Server Action module**, not MSW. With the cart behind Server Actions the browser issues no GraphQL request, so there is nothing for MSW to intercept; the action is the seam. MSW still covers the server-side action tests.
+  - New file `src/lib/cart/fetchers.ts` (not in the spec's file list): reads are kept out of the `"use server"` module because every export of one becomes a public POST endpoint.
+  - `getCartFromCookie` swallows a failed cart read and renders an empty cart, because it runs in the root layout and throwing would replace every page on the site with an error boundary over a header badge.
+
+- Spec: `context/features/012-cart-spec.md`. Source of truth for decisions: `docs/cart.md` ("Decisions", 2026-09-24) — read it before implementing, do not re-derive. Prior research: `docs/apollo-nextjs.md`.
+- **Architecture:** httpOnly cookie + Server Actions are the only code that talks to the cart API. No GraphQL from the browser; the cart never touches client Apollo. `ApolloWrapper` stays for predictive search only.
+- **Reverses `apollo-nextjs.md` decision 4** (client Apollo cache for the cart) — record as a README trade-off next to the original.
+- Cart reads in Server Components use the RSC Apollo client with `context: { fetchOptions: { cache: "no-store" } }`. No `revalidatePath`/`revalidateTag`/`refresh` on mutations — the action's return value advances client base state.
+- Adds to an existing line use an absolute `cartLinesUpdate`, never `cartLinesAdd`, so the ceiling can't be overshot and retries are safe.
+- `cart(id)` → `null` is treated as an empty cart; a mutation failing with `INVALID` on `cartId` starts a fresh cart. `INVALID_MERCHANDISE_LINE` → "That option is no longer available", never the raw message.
+- Emptied cart keeps the cookie and cart id (`totalQuantity: 0`). New lines are prepended (server order is newest-first).
+- `useOptimistic`'s setter must be called inside a transition. Server Actions are dispatched one at a time per client — hence the debounce.
+- `/` becomes dynamic; accepted. **Cache Components / PPR stays out of scope** even if LCP moves.
+- The cookie write on first add re-renders the route: harmless but redundant — leave a comment so nobody treats it as load-bearing.
+- Verify first: (1) baseline LCP; (2) that `QuantityStepper`'s draft state supports "update every click, send after 300 ms" — adapt, don't duplicate; (3) more real cart lines for null `cost.amountPerQuantity`, with the fallback covered by a test.
+- Open/unverified: cart expiry window (7-day `maxAge` is a guess; expired id reads back as `null`). Confirm the drawer doesn't keep a stale `optimistic:` key in a list animation after rollback.
+- No new dependencies expected — ask before installing.
+- Not worth testing: discount codes (always `applicable: false`), out-of-stock adds (0/360 unavailable).
+- **Out of scope:** Cache Components/PPR, cross-tab sync (README note only), discount codes, gift cards, notes, shipping/tax, real checkout, predictive search, a second readable count cookie, retrofitting `RichText`.
 
 ## History
 

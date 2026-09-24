@@ -361,3 +361,111 @@ Because actions dispatch sequentially, holding `+` queues one round trip per pre
 - **Local verification**: `next/dist/compiled/cookie` encode/decode round-trip; `npm run build` route table.
 - **`schema.graphql`** (committed) — `CartUserError`, `CartErrorCode`.
 - Prior research: `docs/apollo-nextjs.md` (decisions 2 and 4).
+
+## Measurements
+
+### Baseline: `/` before the cart (2026-09-24)
+
+Lighthouse 12.6.1, mobile preset, simulated throttling, local `next start`, warm cache, 5 runs.
+Taken on the `feature/cart` branch before any implementation commit, per decision 2.
+
+| Run    | Performance | LCP        | FCP    | CLS   | TBT   |
+| ------ | ----------- | ---------- | ------ | ----- | ----- |
+| 1      | 93          | 3.25 s     | 0.91 s | 0     | 34 ms |
+| 2      | 93          | 3.24 s     | 0.91 s | 0     | 37 ms |
+| 3      | 93          | 3.24 s     | 0.91 s | 0     | 35 ms |
+| 4      | 93          | 3.24 s     | 0.91 s | 0     | 37 ms |
+| 5      | 93          | 3.24 s     | 0.91 s | 0     | 38 ms |
+| median | **93**      | **3.24 s** | 0.91 s | **0** | 37 ms |
+
+Route table confirms the research: `/` is `○ (Static)`, `/collections/[handle]` and `/products/[handle]` already `ƒ (Dynamic)`.
+
+**What the LCP is made of** — this is the part that matters for the after-comparison:
+
+- LCP element is the first collection tile image (`fetchpriority="high"`, `loading="eager"`).
+- Phases: **TTFB 456 ms, load delay 0 ms, load time 0 ms, render delay 2789 ms.**
+- Image transfer for the whole page is **44 KB over 5 images**, consistent with the 45 KB recorded in PR #12.
+
+So LCP here is **render-delay bound, not image bound**: 86% of it is render delay, and the image itself costs nothing measurable. Two consequences:
+
+1. The absolute number differs from the 2.51 s recorded in PR #12 on the same method. The image bytes match (44 vs 45 KB), so this is machine/render variance between sessions, **not** an image regression. Only the before/after pair measured in this session is comparable.
+2. The cart makes `/` dynamic, which adds a `no-store` cart query to the critical path. The metric at risk is therefore **TTFB (456 ms)**, which is exactly what the `<Suspense>` boundary around the cart read exists to protect. If LCP moves, check TTFB first before suspecting anything else.
+
+### After: `/` with the cart (2026-09-24)
+
+Same method, same machine, same session as the baseline: Lighthouse 12.6.1, mobile preset,
+local `next start`, warm cache, median of 5.
+
+The route is now `ƒ (Dynamic)`, so there are two populations to measure, and only measuring
+the first would flatter the result.
+
+| Metric          | Before (static `/`) | After, no cart cookie | After, holding a cart |
+| --------------- | ------------------- | --------------------- | --------------------- |
+| Performance     | 93                  | 93                    | **92**                |
+| LCP             | 3.24 s              | 3.18 s                | **3.31 s**            |
+| FCP             | 0.91 s              | 0.92 s                | 0.91 s                |
+| CLS             | 0                   | **0**                 | **0**                 |
+| TBT             | 37 ms               | 39 ms                 | —                     |
+| Server response | —                   | 24 ms                 | **271 ms**            |
+| Image bytes     | 44 KB               | 44 KB                 | —                     |
+| Script bytes    | 214 KB              | 218 KB                | —                     |
+
+**Reading it honestly:**
+
+- **A visitor with no cart pays nothing.** `getCartFromCookie` returns an empty cart before
+  making any request when there is no cookie, so the dynamic route costs 24 ms of server
+  response and LCP is unchanged (3.24 → 3.18 s is noise; the two runs bracket each other).
+- **A visitor holding a cart pays ~250 ms of server response**, which moves LCP by ~0.13 s
+  and the performance score from 93 to 92. That is the whole cost of decision 2, and it lands
+  exactly where the baseline predicted: TTFB, not rendering. LCP stays render-delay bound
+  (render delay 2695 ms of 3.18 s).
+- **CLS stays 0** in both populations. The count badge is absolutely positioned over the icon,
+  so it cannot move the header whether it reads 0, 5 or 10.
+- **The client bundle grew 4 KB** (214 → 218 KB script) for the provider, drawer and trigger.
+- Still inside the project's budgets (performance ≥ 90, CLS < 0.1); **LCP is over the 2.5 s
+  target in every column, including the baseline**, so that is a pre-existing gap the cart did
+  not create and does not fix.
+
+**What this says about the deferred work.** The 250 ms is serial: the layout awaits the cart
+before the shell renders. A `<Suspense>` boundary around the cart read would hide it, and that
+is what the spec asked for — see the note below on why it is not implemented. Cache Components
+(decision 2, deferred to the performance phase) would remove it properly by prerendering the
+static shell and streaming the cart into it. This measurement is the input that work needs.
+
+## Open: the `<Suspense>` boundary around the cart read
+
+The spec asks for the cart read to be wrapped in `<Suspense>` with a badge-sized fallback, so
+the shell and page content stream without waiting on the cart query. **It is not implemented.**
+The layout awaits the cart instead. This is the one requirement in the spec that is not met,
+and it needs an architectural decision rather than more effort.
+
+**Why it does not work with the approved state design.** Decision 1 puts the cart in a
+`CartProvider` holding `useState(initialCart)` with `useOptimistic` on top. Three things then
+have to be true at once, and only two can be:
+
+1. The provider must sit **above the page**, because the product page's "Add to cart" dispatches
+   into the same state as the header badge and the drawer.
+2. The provider needs a **synchronously available** cart, because `useState` and `useOptimistic`
+   both need a value at first render.
+3. To stream, the cart must be **awaited inside** the subtree, with `use(promise)`.
+
+A component that calls `use()` suspends **itself and everything it renders**. Since the page is
+rendered as the provider's children, suspending the provider suspends the page — which is
+worse than awaiting, not better. Putting `use()` in the consumers instead (badge, drawer) works
+for streaming but splits `useOptimistic` across two subtrees that would no longer share
+optimistic state, and leaves the product page with nothing to dispatch into.
+
+**The measured cost of not doing it** is ~250 ms of server response for a visitor who has a
+cart, and nothing for one who does not (see "Measurements"). CLS is 0 either way, because the
+badge is positioned over the icon rather than occupying layout.
+
+**Options, for the architect:**
+
+- **Leave it.** The cost is bounded and only paid by visitors who already have a cart.
+- **Move cart state out of React context** into a module-level store read with
+  `useSyncExternalStore`. A store is shared across the whole client tree regardless of nesting,
+  so the provider no longer has to sit above the page, and the badge and drawer can each
+  `use(promise)` inside their own `<Suspense>`. This is a real change to the approved design
+  (it replaces `useState` + `useOptimistic` as the base), so it is not something to do quietly.
+- **Do it properly with Cache Components**, which is already the deferred plan (decision 2) and
+  removes the serial request rather than hiding it.
