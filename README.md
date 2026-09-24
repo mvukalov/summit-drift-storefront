@@ -35,7 +35,7 @@ The checkout button leads to mock.shop's demo checkout page: no payment is taken
 
 ## Architecture Notes
 
-- **Server first.** Catalog data is fetched in Server Components and mapped to domain types in `src/lib/`; client components receive  plain props. The browser makes no GraphQL requests.
+- **Server first.** Catalog data is fetched in Server Components and mapped to domain types in `src/lib/`; client components receive plain props. The browser makes no GraphQL requests.
 - **URL as state.** Sort, facets and the selected variant live in the URL and are validated on the server.
 - **Cart.** The cart id is a bearer token, so it lives in an httpOnly cookie and only Server Actions talk to the cart API. The UI uses `useOptimistic` over a pure reducer (`src/lib/cart/`), which makes the interesting logic unit-testable and lets rollback happen without extra code.
 - **One choke point for HTML.** Shopify's `descriptionHtml` is only ever rendered through the `RichText` atom, enforced with ESLint rules.
