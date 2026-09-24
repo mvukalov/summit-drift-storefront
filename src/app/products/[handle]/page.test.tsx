@@ -1,8 +1,9 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProductPage, { generateMetadata } from "./page";
 import { getProduct } from "@/lib/catalog/fetchers";
 import { toProductDetail } from "@/lib/catalog/mappers";
+import { renderWithCart } from "@/test/cart";
 import { productByHandleFixture } from "@/test/msw/fixtures/productByHandle";
 import type { ProductDetail } from "@/types/catalog";
 
@@ -12,6 +13,10 @@ const PATH = `/products/${HANDLE}`;
 vi.mock("@/lib/catalog/fetchers", () => ({
   getProduct: vi.fn(),
 }));
+
+// "Add to cart" now calls Server Actions; mocking that module keeps the RSC-only Apollo
+// client out of jsdom, where it cannot load.
+vi.mock("@/lib/cart/actions", () => import("@/test/cart-actions"));
 
 // notFound() throws in Next; the mock keeps that contract so the page can't fall through.
 const notFoundError = new Error("NEXT_NOT_FOUND");
@@ -37,7 +42,8 @@ function props(searchParams: Record<string, string | string[]> = {}, handle = HA
 }
 
 async function renderPage(searchParams: Record<string, string | string[]> = {}) {
-  render(await ProductPage(props(searchParams)));
+  // The page's "Add to cart" reads cart state from context.
+  renderWithCart(await ProductPage(props(searchParams)));
 }
 
 beforeEach(() => {
@@ -157,7 +163,7 @@ describe("ProductPage", () => {
 
   describe("structured data", () => {
     it("renders Product and BreadcrumbList blocks", async () => {
-      const { container } = render(await ProductPage(props()));
+      const { container } = renderWithCart(await ProductPage(props()));
       const blocks = [...container.querySelectorAll('script[type="application/ld+json"]')].map(
         (script) => JSON.parse(script.textContent ?? "{}"),
       );
