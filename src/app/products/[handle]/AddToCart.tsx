@@ -1,31 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Button } from "@/components/atoms/Button/Button";
 import { QuantityStepper } from "@/components/molecules/QuantityStepper/QuantityStepper";
+import { useCart } from "@/components/organisms/CartProvider/CartProvider";
+import { MAX_QUANTITY, MIN_QUANTITY } from "@/lib/cart/limits";
+import type { ProductVariant } from "@/types/catalog";
 import styles from "./AddToCart.module.scss";
 
 export interface AddToCartProps {
   /** Whether the selected variant can be bought. */
   available: boolean;
+  /**
+   * The variant to add, and the data the optimistic line is built from. `null` for a product
+   * with no variants at all, which still renders the control in its out-of-stock state rather
+   * than dropping it, so the page always says why nothing can be bought.
+   */
+  variant: ProductVariant | null;
+  /** Product title, which is what a cart line is named after. */
+  title: string;
 }
-
-// The API accepts any quantity and reports `quantityAvailable: null` on every variant, so
-// the ceiling is a frontend rule (project overview §2, §5.3). The cart feature enforces the
-// same limit per line.
-const MIN_QUANTITY = 1;
-const MAX_QUANTITY = 10;
 
 /**
  * Quantity plus the "Add to cart" button.
  *
- * The button is deliberately inert: the cart does not exist yet, so this feature ships the
- * control, its states and its keyboard behaviour, and the `cart` feature wires up the
- * action. It is a real enabled button when the variant is available, so the disabled state
- * below means "out of stock" and nothing else.
+ * The optimistic line is built here from data the page already has, so the drawer shows the
+ * item before the request finishes. A refusal at the per-line maximum comes back without any
+ * request at all and is shown next to this button rather than in the drawer, because this is
+ * the control that caused it.
  */
-export function AddToCart({ available }: AddToCartProps) {
+export function AddToCart({ available, variant, title }: AddToCartProps) {
+  const { addLine, openDrawer } = useCart();
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
+  const [error, setError] = useState<string | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const errorId = useId();
+
+  async function handleAddToCart() {
+    if (!variant) return;
+    setError(null);
+    setIsAdding(true);
+
+    const result = await addLine({
+      variantId: variant.id,
+      title,
+      options: variant.selectedOptions,
+      image: variant.image,
+      quantity,
+      unitPrice: variant.price,
+    });
+
+    setIsAdding(false);
+
+    if (result.ok) {
+      // Opening the drawer moves focus into it, which is also how the user learns the add
+      // worked without a separate announcement.
+      openDrawer();
+    } else {
+      setError(result.error ?? null);
+    }
+  }
 
   return (
     <div className={styles.addToCart}>
@@ -45,10 +79,23 @@ export function AddToCart({ available }: AddToCartProps) {
           disabled={!available}
         />
 
-        <Button className={styles.submit} disabled={!available}>
+        <Button
+          className={styles.submit}
+          disabled={!available}
+          loading={isAdding}
+          onClick={handleAddToCart}
+          aria-describedby={error ? errorId : undefined}
+        >
           {available ? "Add to cart" : "Out of stock"}
         </Button>
       </div>
+
+      {/* Tied to the button with aria-describedby, so the reason reaches whoever pressed it. */}
+      {error && (
+        <p id={errorId} className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

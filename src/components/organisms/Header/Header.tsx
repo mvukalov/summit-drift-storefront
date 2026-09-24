@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Button } from "@/components/atoms/Button/Button";
 import type { MenuItem } from "@/types/navigation";
-import { CartIcon } from "./icons";
+import { CartTrigger } from "./CartTrigger";
 import { MobileNav } from "./MobileNav";
 import styles from "./Header.module.scss";
 
@@ -10,7 +9,7 @@ export interface HeaderProps {
   items: MenuItem[];
 }
 
-// Server Component: only MobileNav (open/close state) ships as client JavaScript.
+// Server Component: only MobileNav and CartTrigger ship as client JavaScript.
 export function Header({ items }: HeaderProps) {
   return (
     <>
@@ -39,10 +38,7 @@ export function Header({ items }: HeaderProps) {
           )}
 
           <div className={styles.actions}>
-            {/* Placeholder until the cart feature adds the drawer and item count. */}
-            <Button variant="ghost" className={styles.iconButton} aria-label="Cart">
-              <CartIcon />
-            </Button>
+            <CartTrigger />
             <MobileNav items={items} />
           </div>
         </div>

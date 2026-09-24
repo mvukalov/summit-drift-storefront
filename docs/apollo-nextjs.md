@@ -21,6 +21,8 @@ Made by the project architect on 2026-09-22. These replace the matching options 
 4. **Cart reads in Server Components: one RSC client**, with a per-query override `context: { fetchOptions: { cache: "no-store" } }`.
    - The client must support per-query `fetchOptions`.
    - The concrete cart handling is decided in the cart feature.
+   - **Reversed on 2026-09-24 by `docs/cart.md` decision 1, in the part that reserved the client-side Apollo cache for the cart.** The cart id turned out to be a bearer token (it carries a `?key=`), so it lives in an httpOnly cookie and browser JavaScript cannot read it — which means the browser cannot call the cart API at all. Every cart mutation is a Server Action instead, and **the cart never touches client Apollo**. What survives from this decision is the per-query `no-store` override, which the cart read uses exactly as described here.
+   - Consequence: `ApolloWrapper` is now load-bearing for **predictive search only**. The `search` feature must confirm it still needs it; if that feature also ends up server-driven, the provider should come out rather than ship unused.
 5. **Schema: committed `schema.graphql`.** `codegen.ts` reads the local file, so codegen and CI don't depend on mock.shop being up.
    - New npm script `codegen:schema` refreshes the file from the live API. It is run manually.
 6. **Generated types: committed.** New CI step:
@@ -293,6 +295,45 @@ Mutations check **both** transport errors (`CombinedGraphQLErrors`, network) **a
 8. **Decided (see Decisions 3): off.** **Fragment masking** is safer but adds `useFragment`/`getFragmentData` boilerplate. With a mapper layer, the domain types already decouple components from GraphQL.
 9. **Dedup between `generateMetadata` and page** is assumed, not observed (see above).
 10. **Decided (see Decisions 5).** **Codegen needs network access** only when the schema is refreshed. `schema.graphql` is committed and codegen reads it, so CI doesn't depend on mock.shop. Refresh it manually with `npm run codegen:schema`.
+
+## Learned in use (cart feature, 2026-09-24)
+
+Two rules this document did not state, both found by tests rather than by review. Neither is
+optional, and both fail in ways that do not look like Apollo problems.
+
+### `query()` is for Server Components; Server Actions use `getClient()`
+
+The `query` shortcut returned by `registerApolloClient` **must not be called inside a Server
+Action**. It builds a new `ApolloClient` per call, so an action that reads and then mutates gets
+two independent clients. Apollo detects this and warns:
+
+> The `query` shortcut returned from `registerApolloClient` should not be used in Server Action
+> or Middleware environments. […] Please create a single `ApolloClient` instance by calling
+> `getClient()` at the beginning of your Server Action.
+
+So an action calls `getClient()` once and threads that client through every operation it runs
+(`src/lib/cart/actions.ts`). A read used by both a Server Component and an action therefore needs
+two entry points — in the cart's case `getCart` (shortcut) and `getCartWith(client, …)`.
+
+### `possibleTypes` is mandatory for any fragment on an interface or union
+
+`InMemoryCache` cannot match a fragment against an abstract type without being told which
+concrete types implement it, and **it drops every field it cannot attribute instead of raising
+anything**. The cart's `CartLine` fragment is on the `BaseCartLine` interface; without
+`possibleTypes`, a cart written to the cache and read back contained nothing but `__typename` —
+lines with no id, quantity, price or merchandise, and no error, no warning and no failing mapper
+test (mapper tests call the mapper directly and never touch the cache).
+
+`POSSIBLE_TYPES` in `src/lib/graphql/config.ts` is therefore part of the cache configuration,
+not an optimization, and it has to grow whenever a document starts selecting through an
+interface or union. It is hand-maintained while it is two entries; past that, generate it with
+codegen's `possibleTypes` output. `src/lib/cart/fetchers.server.test.ts` asserts both the fixed
+behaviour and the broken one, so the failure mode stays visible.
+
+Related: the cart also sets `fetchPolicy: "no-cache"` on its reads and mutations, because a
+per-visitor cart has no business in a normalized cache. That is a correctness choice of its own
+and **not** a substitute for `possibleTypes` — relying on it would leave the trap armed for the
+next document that reads through an interface.
 
 ## Sources
 

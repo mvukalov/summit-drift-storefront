@@ -12,6 +12,15 @@ export interface QuantityStepperProps {
   /** Highest selectable quantity, or `undefined` for no ceiling. */
   max?: number;
   label?: string;
+  /**
+   * Keeps `label` as the field's accessible name without showing it.
+   *
+   * For places where surrounding content already says what the number is, such as a cart
+   * line, where a visible "Quantity for <product title>" would be a wall of repeated text.
+   * The label becomes an `aria-label` rather than a clipped `<label>`, so it costs no layout
+   * box and can't leave an empty flex gap behind.
+   */
+  labelHidden?: boolean;
   disabled?: boolean;
 }
 
@@ -39,6 +48,7 @@ export function QuantityStepper({
   min = 1,
   max,
   label = "Quantity",
+  labelHidden = false,
   disabled = false,
 }: QuantityStepperProps) {
   const inputId = useId();
@@ -69,9 +79,11 @@ export function QuantityStepper({
 
   return (
     <div className={styles.stepper}>
-      <label htmlFor={inputId} className={styles.label}>
-        {label}
-      </label>
+      {!labelHidden && (
+        <label htmlFor={inputId} className={styles.label}>
+          {label}
+        </label>
+      )}
       <div className={styles.controls}>
         <Button
           variant="secondary"
@@ -86,6 +98,7 @@ export function QuantityStepper({
           id={inputId}
           type="number"
           inputMode="numeric"
+          aria-label={labelHidden ? label : undefined}
           className={styles.input}
           value={draft ?? String(value)}
           min={min}

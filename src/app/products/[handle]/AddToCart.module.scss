@@ -34,3 +34,9 @@
     min-height: var(--size-touch-target);
   }
 }
+
+.error {
+  margin: 0;
+  font-size: var(--text-small-size);
+  color: var(--color-accent);
+}

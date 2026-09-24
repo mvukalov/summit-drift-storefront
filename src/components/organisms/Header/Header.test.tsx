@@ -1,8 +1,13 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { renderWithCart, testCart, testLine } from "@/test/cart";
 import type { MenuItem } from "@/types/navigation";
 import { Header } from "./Header";
+
+// The header's cart button is a client component that calls Server Actions; the actions
+// module is mocked so jsdom never loads the RSC-only Apollo client behind it.
+vi.mock("@/lib/cart/actions", () => import("@/test/cart-actions"));
 
 const ITEMS: MenuItem[] = [
   { title: "Summit Protection Shells", href: "/collections/summit-protection-shells" },
@@ -33,7 +38,7 @@ afterAll(() => {
 
 async function openMenu() {
   const user = userEvent.setup();
-  render(<Header items={ITEMS} />);
+  renderWithCart(<Header items={ITEMS} />);
   const trigger = screen.getByRole("button", { name: "Menu" });
   await user.click(trigger);
   const dialog = screen.getByRole("dialog", { name: "Menu" });
@@ -43,7 +48,7 @@ async function openMenu() {
 describe("Header", () => {
   it("makes the skip link the first focusable element, pointing at the main content", async () => {
     const user = userEvent.setup();
-    render(<Header items={ITEMS} />);
+    renderWithCart(<Header items={ITEMS} />);
 
     await user.tab();
 
@@ -53,7 +58,7 @@ describe("Header", () => {
   });
 
   it("links the logo to the home page", () => {
-    render(<Header items={ITEMS} />);
+    renderWithCart(<Header items={ITEMS} />);
 
     expect(screen.getByRole("link", { name: "Summit Drift Outfitters" })).toHaveAttribute(
       "href",
@@ -62,7 +67,7 @@ describe("Header", () => {
   });
 
   it("renders the primary navigation from the menu items", () => {
-    render(<Header items={ITEMS} />);
+    renderWithCart(<Header items={ITEMS} />);
 
     const nav = screen.getByRole("navigation", { name: "Primary" });
     const links = within(nav).getAllByRole("link");
@@ -73,20 +78,20 @@ describe("Header", () => {
   });
 
   it("omits the navigation when there are no menu items", () => {
-    render(<Header items={[]} />);
+    renderWithCart(<Header items={[]} />);
 
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
-  it("shows a cart button", () => {
-    render(<Header items={ITEMS} />);
+  it("shows a cart button carrying the item count in its name", () => {
+    renderWithCart(<Header items={ITEMS} />, testCart([testLine({ quantity: 2 })]));
 
-    expect(screen.getByRole("button", { name: "Cart" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cart, 2 items" })).toBeInTheDocument();
   });
 
   describe("mobile menu", () => {
     it("starts closed", () => {
-      render(<Header items={ITEMS} />);
+      renderWithCart(<Header items={ITEMS} />);
 
       expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
         "aria-expanded",

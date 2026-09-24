@@ -112,7 +112,11 @@ export default async function ProductPage(props: PageProps<"/products/[handle]">
             />
           )}
 
-          <AddToCart available={variant?.availableForSale ?? false} />
+          <AddToCart
+            available={variant?.availableForSale ?? false}
+            variant={variant ?? null}
+            title={product.title}
+          />
 
           {product.descriptionHtml && (
             <section aria-labelledby="description-heading" className={styles.description}>

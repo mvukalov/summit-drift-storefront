@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { CartDrawer } from "@/components/organisms/CartDrawer/CartDrawer";
+import { CartProvider } from "@/components/organisms/CartProvider/CartProvider";
 import { Footer } from "@/components/organisms/Footer/Footer";
 import { Header } from "@/components/organisms/Header/Header";
+import { getCartFromCookie } from "@/lib/cart/fetchers";
 import { getMainMenu } from "@/lib/catalog/fetchers";
 import { ApolloWrapper } from "@/lib/graphql/ApolloWrapper";
 import { SITE_URL } from "@/lib/seo/site";
@@ -19,19 +22,23 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Fetched once here and shared by the header and footer navigation.
-  const menuItems = await getMainMenu();
+  // Both start together; the cart is a `no-store` read while the menu is cached.
+  // Reading the cart cookie here is what makes `/` render dynamically (docs/cart.md).
+  const [menuItems, cart] = await Promise.all([getMainMenu(), getCartFromCookie()]);
 
   return (
     <html lang="en" className={fontVariables}>
       <body>
         <ApolloWrapper>
-          <Header items={menuItems} />
-          {/* tabIndex -1: the skip link's target must be focusable to receive focus. */}
-          <main id="main-content" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer items={menuItems} />
+          <CartProvider initialCart={cart}>
+            <Header items={menuItems} />
+            {/* tabIndex -1: the skip link's target must be focusable to receive focus. */}
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer items={menuItems} />
+            <CartDrawer />
+          </CartProvider>
         </ApolloWrapper>
       </body>
     </html>

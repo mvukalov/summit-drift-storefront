@@ -1,0 +1,26 @@
+// Square icon button; the Button atom supplies height, focus and hover.
+.trigger {
+  position: relative;
+  width: var(--size-touch-target);
+  padding: 0;
+}
+
+// Absolutely positioned, so appearing or changing digits never moves the header.
+.badge {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-4);
+  height: var(--space-4);
+  padding-inline: var(--space-1);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-pill);
+}
