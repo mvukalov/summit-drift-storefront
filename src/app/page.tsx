@@ -5,12 +5,7 @@ import { ProductCard } from "@/components/molecules/ProductCard/ProductCard";
 import { getCollections, getFeaturedProducts } from "@/lib/catalog/fetchers";
 import styles from "./page.module.scss";
 
-// Pinned by handle rather than "first collection", so the hero doesn't depend on API order.
-const HERO_COLLECTION_HANDLE = "summit-protection-shells";
-
-// Rendered widths per layout in page.module.scss: the hero image is a quarter column from md
-// (full width, capped, below); both grids go from 2 to 4 columns at md.
-const HERO_IMAGE_SIZES = "(min-width: 768px) 25vw, 20rem";
+// Rendered widths per layout in page.module.scss: both grids go from 2 to 4 columns at md.
 const GRID_IMAGE_SIZES = "(min-width: 768px) 25vw, 50vw";
 
 export default async function Home() {
@@ -18,9 +13,6 @@ export default async function Home() {
     getCollections(),
     getFeaturedProducts(),
   ]);
-  const heroCollection = collections.find(
-    (collection) => collection.handle === HERO_COLLECTION_HANDLE,
-  );
 
   return (
     <>
@@ -41,16 +33,6 @@ export default async function Home() {
             </Link>
           </div>
         </div>
-        {heroCollection?.image && (
-          <div className={styles.heroMedia}>
-            <ProductImage
-              image={heroCollection.image}
-              title={heroCollection.title}
-              sizes={HERO_IMAGE_SIZES}
-              isLcp
-            />
-          </div>
-        )}
       </section>
 
       <section id="collections" className={styles.section} aria-labelledby="collections-heading">

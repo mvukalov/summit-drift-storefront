@@ -43,17 +43,18 @@ describe("Home page", () => {
     expect(screen.getByRole("link", { name: "Shop sale" })).toHaveAttribute("href", "#featured");
   });
 
-  it("uses the Protection Shells image as the single high-priority image", async () => {
+  it("has no hero image and no high-priority image on the page", async () => {
     render(await Home());
 
-    const priorityImages = screen
-      .getAllByRole("img")
-      .filter((img) => img.getAttribute("fetchpriority") === "high");
-    expect(priorityImages).toHaveLength(1);
-    expect(priorityImages[0]).toHaveAccessibleName("Summit Protection Shells");
+    expect(
+      within(section("Built for the long climb, worn past the summit.")).queryByRole("img"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryAllByRole("img").filter((img) => img.getAttribute("fetchpriority") === "high"),
+    ).toEqual([]);
   });
 
-  it("renders the hero without an image when the hero collection has none", async () => {
+  it("renders collections without images when the API returns none", async () => {
     const collections = collectionsFixture.collections.nodes.map(toCollectionSummary);
     vi.mocked(getCollections).mockResolvedValueOnce(
       collections.map((collection) => ({ ...collection, image: null })),
@@ -62,9 +63,6 @@ describe("Home page", () => {
     render(await Home());
 
     expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-    expect(
-      screen.queryAllByRole("img").filter((img) => img.getAttribute("fetchpriority") === "high"),
-    ).toEqual([]);
     expect(within(section("Collections")).getAllByRole("link")).toHaveLength(4);
   });
 
