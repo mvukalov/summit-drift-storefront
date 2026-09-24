@@ -5,11 +5,17 @@ import {
   InMemoryCache,
   registerApolloClient,
 } from "@apollo/client-integration-nextjs";
-import { CACHE_TAGS, REVALIDATE_SECONDS, SHOPIFY_API_URL, SHOPIFY_HEADERS } from "./config";
+import {
+  CACHE_TAGS,
+  POSSIBLE_TYPES,
+  REVALIDATE_SECONDS,
+  SHOPIFY_API_URL,
+  SHOPIFY_HEADERS,
+} from "./config";
 
 export function makeRscClient(): ApolloClient {
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({ possibleTypes: POSSIBLE_TYPES }),
     link: new HttpLink({
       uri: SHOPIFY_API_URL,
       headers: SHOPIFY_HEADERS,
