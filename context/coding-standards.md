@@ -74,7 +74,9 @@ src/
     graphql/               documents, generated types, Apollo clients
     catalog/               fetchers + mappers: GraphQL types → domain types
     facets/                derive / apply / URL (de)serialize — pure TS
-    cart/                  reducer, optimistic logic, cookie helpers — pure TS
+    cart/                  reducer, limits and mappers are pure TS; cookie.ts, fetchers.ts and
+                            actions.ts ("use server") do the cookie/GraphQL I/O around them
+    variants/              resolve a URL selection to a variant — pure TS
     format/                money, option-name normalization, colors
     sanitize/              allowlist sanitizer for API-supplied HTML — pure TS
     seo/                   canonical URLs, breadcrumbs, structured data
@@ -102,7 +104,7 @@ e2e/                       Playwright specs
 
 - `descriptionHtml` and any other HTML from the API is **sanitized** before rendering. `dangerouslySetInnerHTML` is allowed only with sanitized input, in one dedicated component.
 - JSON-LD structured data is rendered by one dedicated `JsonLd` component: `JSON.stringify` output with `<` escaped as `\u003c`, so API text can't close the `<script>` tag.
-- Search params are parsed and validated with Zod before use.
+- Search params are parsed and validated with Zod before use. Exception: a closed whitelist check against known-good values (e.g. `parseVariantSelection` in `src/lib/variants/selection.ts`, which only accepts a value already present in `product.options`) doesn't need a Zod schema wrapped around it — the whitelist is already stricter than a generic string schema would be.
 - No secrets in client code (this project has none; keep it that way).
 
 ## Testing

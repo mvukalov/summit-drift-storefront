@@ -21,6 +21,15 @@ deliberately deferred along the way, kept here so they are not lost.
 - **The cart is not synchronised across tabs.** Two tabs each keep their own base state, so a
   change in one is invisible to the other until a reload. A `storage` event or polling would
   fix it; it is out of scope while the cart is single-session demo data.
+- **Adding to an existing line has a read-then-write race.** `addToCart` in `lib/cart/actions.ts`
+  reads a line's current quantity, then writes an absolute total computed from it. Two
+  overlapping calls for the same variant — two tabs, or a retry racing the original — both read
+  the same starting quantity and each write the same total, so one caller's addition is silently
+  lost. Same root cause as the cross-tab staleness above: the cart has no server-side
+  compare-and-swap, so nothing here can detect the collision, only reduce its window. Accepted
+  as a known limitation rather than fixed, since closing it would need either a real concurrency
+  primitive the API doesn't offer, or switching the existing-line case back to the additive
+  `cartLinesAdd`, which reopens decision 4's overflow problem instead.
 - **Reading the cart makes every route dynamic, and the cart read is not wrapped in
   `<Suspense>`.** `/` was the only statically prerendered route and no longer is. Streaming the
   cart would require moving cart state out of React context (a component that calls `use()`

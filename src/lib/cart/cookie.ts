@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 
-export const CART_COOKIE = "cart_id";
+const CART_COOKIE = "cart_id";
 
 // Below Shopify's cart retention window, which this API doesn't document. The exact value
 // barely matters: a stale id reads back as `cart: null`, so the worst case is a fresh cart.

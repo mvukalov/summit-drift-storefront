@@ -1,29 +1,15 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { stubDialog, unstubDialog } from "@/test/dialog";
 
 import { useModalDialog } from "./useModalDialog";
 
-// jsdom implements <dialog> but not showModal/close, so both are stubbed the way the
-// Header and FilterDrawer suites do it. The real modality and focus trap are the browser's
-// and are verified in Chromium, not here.
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  };
-  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
-    if (!this.open) return;
-    this.removeAttribute("open");
-    this.dispatchEvent(new Event("close"));
-  };
-});
-
-afterAll(() => {
-  // @ts-expect-error -- removing the test-only stubs; jsdom doesn't define these methods.
-  delete HTMLDialogElement.prototype.showModal;
-  // @ts-expect-error -- see above.
-  delete HTMLDialogElement.prototype.close;
-});
+// jsdom implements <dialog> but not showModal/close; see src/test/dialog.ts for what the
+// stub covers and doesn't. The real modality and focus trap are the browser's and are
+// verified in Chromium, not here.
+beforeAll(stubDialog);
+afterAll(unstubDialog);
 
 function Harness() {
   const { dialogProps, triggerProps, titleId, isOpen, close } = useModalDialog();

@@ -97,6 +97,20 @@ describe("CartDrawer", () => {
     expect(within(dialog).getByRole("button", { name: "Decrease quantity" })).toBeDisabled();
   });
 
+  // The "+" button is already disabled at the ceiling; this text is what explains why to a
+  // screen-reader user, who would otherwise only hear "dimmed".
+  it("explains why a line at the maximum can't be increased further", async () => {
+    const { dialog } = await openDrawer(testCart([testLine({ id: "line-1", quantity: 10 })]));
+
+    expect(within(dialog).getByRole("status")).toHaveTextContent("Maximum quantity reached.");
+  });
+
+  it("says nothing about the maximum for a line under it", async () => {
+    const { dialog } = await openDrawer();
+
+    expect(within(dialog).queryByText("Maximum quantity reached.")).not.toBeInTheDocument();
+  });
+
   describe("optimistic updates", () => {
     it("shows the new quantity before the mutation resolves, and keeps it after", async () => {
       // Held open so the assertion lands while the request is still in flight.
@@ -175,6 +189,49 @@ describe("CartDrawer", () => {
         await within(dialog).findByText("Ripstop Shell Jacket", { selector: "p" }),
       ).toBeInTheDocument();
       expect(await screen.findByRole("alert")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * Regression: removing a line's DOM node used to leave focus on <body> (the browser's
+   * default), a jarring jump for keyboard and screen-reader users right after a delete.
+   */
+  describe("focus after removing a line", () => {
+    const FIRST = testLine({ id: "line-1", title: "First Jacket", quantity: 1 });
+    const SECOND = testLine({ id: "line-2", title: "Second Jacket", quantity: 1 });
+
+    /** DOM order follows `cart.lines`, so this is stable without depending on exact names. */
+    function removeButtons(dialog: HTMLElement) {
+      return within(dialog).getAllByRole("button", { name: /^Remove/ });
+    }
+
+    it("moves focus to the next line's Remove button", async () => {
+      removeCartLine.mockResolvedValue({ ok: true, cart: testCart([SECOND]) });
+      const { user, dialog } = await openDrawer(testCart([FIRST, SECOND]));
+
+      await user.click(removeButtons(dialog)[0]!);
+
+      await waitFor(() => expect(removeButtons(dialog)[0]).toHaveFocus());
+    });
+
+    it("falls back to the previous line's Remove button when the last line is removed", async () => {
+      removeCartLine.mockResolvedValue({ ok: true, cart: testCart([FIRST]) });
+      const { user, dialog } = await openDrawer(testCart([FIRST, SECOND]));
+
+      await user.click(removeButtons(dialog)[1]!);
+
+      await waitFor(() => expect(removeButtons(dialog)[0]).toHaveFocus());
+    });
+
+    it("moves focus to the drawer title when the last remaining line is removed", async () => {
+      removeCartLine.mockResolvedValue({ ok: true, cart: testCart() });
+      const { user, dialog } = await openDrawer(testCart([FIRST]));
+
+      await user.click(removeButtons(dialog)[0]!);
+
+      await waitFor(() =>
+        expect(within(dialog).getByRole("heading", { name: "Your cart" })).toHaveFocus(),
+      );
     });
   });
 

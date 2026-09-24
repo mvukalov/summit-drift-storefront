@@ -53,6 +53,18 @@ export interface CartContextValue {
   closeDrawer: () => void;
 }
 
+/**
+ * Logs a Server Action call failing outright — the RPC itself rejecting (a network failure
+ * reaching the action at all), not a GraphQL error the action already caught and mapped to
+ * `{ ok: false }`. Development-only, matching the rest of the project's error-logging
+ * convention; the caller still reports `GENERIC_ERROR` to the user regardless.
+ */
+function logDevError(message: string, error: unknown): void {
+  if (process.env.NODE_ENV === "development") {
+    console.error(message, error);
+  }
+}
+
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function useCart(): CartContextValue {
@@ -135,9 +147,7 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
               outcome = { ok: false, error: result.error };
             }
           } catch (error) {
-            if (process.env.NODE_ENV === "development") {
-              console.error("Add to cart failed.", error);
-            }
+            logDevError("Add to cart failed.", error);
             outcome = { ok: false, error: GENERIC_ERROR };
           } finally {
             done();
@@ -187,11 +197,9 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
             }
           } catch (error) {
             // The Server Action's own try/catch covers the GraphQL call; this one covers the
-            // RPC itself failing (a network error reaching the action at all). Either way the
-            // caller gets a message and `settled` still resolves.
-            if (process.env.NODE_ENV === "development") {
-              console.error("Cart quantity update failed.", error);
-            }
+            // RPC itself failing. Either way the caller gets a message and `settled` still
+            // resolves.
+            logDevError("Cart quantity update failed.", error);
             setError(GENERIC_ERROR);
           } finally {
             resolve();
@@ -249,9 +257,7 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
             setError(result.error);
           }
         } catch (error) {
-          if (process.env.NODE_ENV === "development") {
-            console.error("Cart line removal failed.", error);
-          }
+          logDevError("Cart line removal failed.", error);
           setError(GENERIC_ERROR);
         }
       });

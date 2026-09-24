@@ -8,6 +8,25 @@ import { MAX_QUANTITY, MIN_QUANTITY } from "@/lib/cart/limits";
 import type { ProductVariant } from "@/types/catalog";
 import styles from "./AddToCart.module.scss";
 
+/**
+ * A shown refusal, plus what it was about when it was created.
+ *
+ * A message is only ever true of one fact: "this variant already has N in the cart." If the
+ * shopper then picks a different variant, or this same line changes elsewhere (removed or
+ * edited in the drawer), the fact it was about no longer holds. Comparing the *current*
+ * variant/quantity against the snapshot taken when the message was created — rather than
+ * reactively clearing on every change — means the message never disappears out from under
+ * itself the moment it's set: the snapshot is the quantity as of the click that produced it
+ * (`handleAddToCart` closes over that render's already-computed `cartQuantity`), not a value
+ * re-read later after the optimistic add has come and gone — reading it after the fact would
+ * race the very rollback that follows a refusal.
+ */
+interface AddToCartError {
+  message: string;
+  variantId: string | undefined;
+  cartQuantityAtTimeOfError: number;
+}
+
 export interface AddToCartProps {
   /** Whether the selected variant can be bought. */
   available: boolean;
@@ -30,11 +49,20 @@ export interface AddToCartProps {
  * the control that caused it.
  */
 export function AddToCart({ available, variant, title }: AddToCartProps) {
-  const { addLine, openDrawer } = useCart();
+  const { cart, addLine, openDrawer } = useCart();
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AddToCartError | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const errorId = useId();
+
+  const cartQuantity = variant
+    ? (cart.lines.find((line) => line.variantId === variant.id)?.quantity ?? 0)
+    : 0;
+  // Not shown once either half of what it was about has changed — see AddToCartError.
+  const isErrorStale =
+    error !== null &&
+    (error.variantId !== variant?.id || error.cartQuantityAtTimeOfError !== cartQuantity);
+  const visibleError = isErrorStale ? null : error;
 
   async function handleAddToCart() {
     if (!variant) return;
@@ -56,8 +84,14 @@ export function AddToCart({ available, variant, title }: AddToCartProps) {
       // Opening the drawer moves focus into it, which is also how the user learns the add
       // worked without a separate announcement.
       openDrawer();
-    } else {
-      setError(result.error ?? null);
+    } else if (result.error) {
+      // `cartQuantity`, not a value re-read after the await: it's this render's — i.e. this
+      // click's — number, which for the client-side refusal path is exactly what refused it.
+      setError({
+        message: result.error,
+        variantId: variant.id,
+        cartQuantityAtTimeOfError: cartQuantity,
+      });
     }
   }
 
@@ -84,16 +118,16 @@ export function AddToCart({ available, variant, title }: AddToCartProps) {
           disabled={!available}
           loading={isAdding}
           onClick={handleAddToCart}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={visibleError ? errorId : undefined}
         >
           {available ? "Add to cart" : "Out of stock"}
         </Button>
       </div>
 
       {/* Tied to the button with aria-describedby, so the reason reaches whoever pressed it. */}
-      {error && (
+      {visibleError && (
         <p id={errorId} className={styles.error} role="alert">
-          {error}
+          {visibleError.message}
         </p>
       )}
     </div>

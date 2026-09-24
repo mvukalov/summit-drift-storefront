@@ -6,9 +6,8 @@
  * return. The genuinely native parts — Escape closing the dialog, and the rest of the page
  * going inert so focus is trapped — are not exercised here and are checked in a real browser.
  *
- * TODO: `Header.test.tsx`, `FilterDrawer.test.tsx` and `useModalDialog.test.tsx` still carry
- * their own copies of these stubs, written before this helper existed. Fold them in at the
- * next `/cleanup`; they are identical.
+ * Every `<dialog>` suite (`Header`, `FilterDrawer`, `useModalDialog`, `CartDrawer`, `AddToCart`
+ * via `@/test/cart`) uses this one copy.
  */
 export function stubDialog(): void {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {

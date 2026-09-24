@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { CartDrawer } from "@/components/organisms/CartDrawer/CartDrawer";
+import { CartProvider } from "@/components/organisms/CartProvider/CartProvider";
 import { CartTrigger } from "@/components/organisms/Header/CartTrigger";
 import { MAX_QUANTITY } from "@/lib/cart/limits";
 import {
@@ -177,6 +178,59 @@ describe("AddToCart", () => {
 
       expect(await screen.findByRole("alert")).toHaveTextContent("at most");
       expect(addToCart).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * A refusal message is only ever true of one fact — "this variant already has N in the
+   * cart" — so it must not survive either half of that changing, or it becomes actively
+   * wrong rather than just stale.
+   */
+  describe("a refusal message that goes stale", () => {
+    it("clears when the same line changes elsewhere (e.g. removed in the drawer)", async () => {
+      const full = testCart([lineFor(MAX_QUANTITY)]);
+      const { user, button } = renderAddToCart(full);
+
+      await user.click(button);
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+      // Removed via the drawer rendered alongside, not through AddToCart at all.
+      await user.click(screen.getByRole("button", { name: /^Cart,/ }));
+      const dialog = screen.getByRole("dialog", { name: "Your cart" });
+      await user.click(within(dialog).getByRole("button", { name: /^Remove/ }));
+
+      await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
+      expect(button).not.toHaveAttribute("aria-describedby");
+    });
+
+    it("clears when the shopper switches to a different variant", async () => {
+      const full = testCart([lineFor(MAX_QUANTITY)]);
+      const user = userEvent.setup();
+      const { rerender } = renderWithCart(
+        <>
+          <CartTrigger />
+          <AddToCart available variant={VARIANT} title={TITLE} />
+          <CartDrawer />
+        </>,
+        full,
+      );
+
+      await user.click(screen.getByRole("button", { name: "Add to cart" }));
+      expect(await screen.findByRole("alert")).toBeInTheDocument();
+
+      // Same tree, same live CartProvider (rerender reconciles it in place; a fresh
+      // initialCart is ignored post-mount) — only the selected variant changes, as it would
+      // when the shopper picks a different color or size on the URL.
+      const otherVariant = { ...VARIANT, id: "gid://shopify/ProductVariant/other" };
+      rerender(
+        <CartProvider initialCart={full}>
+          <CartTrigger />
+          <AddToCart available variant={otherVariant} title={TITLE} />
+          <CartDrawer />
+        </CartProvider>,
+      );
+
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
   });
 
