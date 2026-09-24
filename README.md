@@ -2,14 +2,105 @@
 
 [![CI](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/ci.yml)
 
-A headless storefront for Summit Drift Outfitters, a fictional outdoor brand, built with Next.js on the Shopify Storefront GraphQL API (mock.shop).
+A headless storefront for Summit Drift Outfitters, a fictional outdoor brand, built with Next.js on the Shopify Storefront GraphQL API ([mock.shop](https://mock.shop)).
 
-The full README (setup, architecture, decisions, trade-offs and performance numbers) comes in a later feature.
+This project was built for portfolio purposes to practice production-style frontend work: a typed GraphQL data layer, server-first rendering, an accessible component library, optimistic UI with rollback, and a test-driven workflow with CI on every pull request.
+
+## Live Demo
+
+https://summit-drift-storefront.vercel.app/
+
+The checkout button leads to mock.shop's demo checkout page: no payment is taken and nothing ships. The cart itself is real, backed by the Storefront cart API.
+
+## Features
+
+- Home page and collection pages with navigation driven by the API
+- Collection sorting and derived facets (filters), with all state kept in the URL so links are shareable
+- Product page with image gallery, variant picker (selection in the URL), quantity stepper, sanitized rich-text description, and `Product` / `BreadcrumbList` JSON-LD
+- Cart drawer with instant add / update / remove, automatic rollback on failure, and a per-line quantity limit
+- Cart persisted in an httpOnly cookie, so it survives reloads; the header count is rendered on the server
+- Loading, error and not-found states per route
+- Accessible by design: semantic markup, keyboard and focus management, visible focus states, touch targets of at least 44px
+
+## Tech Stack
+
+- Next.js 16 (App Router, Server Components, Server Actions), React 19, TypeScript (strict)
+- SCSS Modules with design tokens
+- Apollo Client with graphql-codegen (typed operations); domain types mapped in `src/lib/`
+- Zod for URL and input validation
+- sanitize-html behind a single `RichText` atom
+- Vitest and React Testing Library, MSW for API mocking
+- Storybook for the component library (atoms, molecules, organisms)
+- GitHub Actions CI, deployed on Vercel
+
+## Architecture Notes
+
+- **Server first.** Catalog data is fetched in Server Components and mapped to domain types in `src/lib/`; client components receive  plain props. The browser makes no GraphQL requests.
+- **URL as state.** Sort, facets and the selected variant live in the URL and are validated on the server.
+- **Cart.** The cart id is a bearer token, so it lives in an httpOnly cookie and only Server Actions talk to the cart API. The UI uses `useOptimistic` over a pure reducer (`src/lib/cart/`), which makes the interesting logic unit-testable and lets rollback happen without extra code.
+- **One choke point for HTML.** Shopify's `descriptionHtml` is only ever rendered through the `RichText` atom, enforced with ESLint rules.
+- **Research before code.** Non-trivial decisions are backed by short research notes in `docs/` (Apollo with Next.js, HTML sanitization, image performance, cart persistence).
+
+## Testing and Quality
+
+- Unit and component tests with Vitest and React Testing Library (700+ tests), including regression tests for bugs found in review
+- Lint, typecheck, tests with coverage, and production build run on every pull request
+- Every change goes through a pull request; `main` is protected and requires a green CI run
+
+## Project Structure
+
+```
+src/
+├── app/                # routes, layouts, loading and error states
+├── components/
+│   ├── atoms/
+│   ├── molecules/
+│   └── organisms/
+├── hooks/
+├── lib/
+│   ├── cart/           # cart reducer, Server Actions, cookie, limits
+│   ├── catalog/        # fetchers and mappers
+│   ├── facets/         # derived facets, sorting, URL state
+│   ├── variants/       # variant selection logic
+│   ├── sanitize/       # HTML sanitization
+│   ├── seo/            # JSON-LD and metadata
+│   └── graphql/        # documents, generated types, Apollo clients
+├── styles/             # design tokens
+└── types/              # domain types
+context/                # feature specs and working notes
+docs/                   # research and architecture notes
+```
+
+## Run Locally
+
+```
+npm install
+npm run dev
+```
+
+The application will be available at http://localhost:3000. Useful scripts:
+
+```
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run storybook
+npm run codegen
+```
+
+No environment variables are required. `NEXT_PUBLIC_SITE_URL` sets canonical URLs and defaults to `http://localhost:3000`.
+
+## Planned Improvements
+
+- Search: results page and a predictive combobox
+- End-to-end tests with Playwright and axe accessibility checks in CI
+- Performance work: Lighthouse budgets in CI and Cache Components (see the LCP note below)
+- Storybook deployment
 
 ## Trade-offs recorded so far
 
-The full write-up lands with the README feature; these are the decisions that were reversed or
-deliberately deferred along the way, kept here so they are not lost.
+Decisions that were reversed or deliberately deferred along the way, kept here so they are not lost.
 
 - **The cart does not use the client-side Apollo cache.** `docs/apollo-nextjs.md` decision 4
   originally reserved it for exactly that. The cart id carries a `?key=` and is therefore a
@@ -53,3 +144,11 @@ deliberately deferred along the way, kept here so they are not lost.
   3.24 s with 86% of it render delay and only 44 KB of images, so this is a
   JavaScript/render-time problem, not an image or data one. Pre-existing, untouched by the cart,
   and input for the performance phase.
+
+## Author
+
+Martin Vukalović
+
+## License
+
+This project is intended for educational and portfolio purposes.
