@@ -167,7 +167,14 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
   const existing = current.lines.find((line) => line.variantId === variantId);
 
   // `cartLinesAdd` is additive, so an existing line is set to its absolute target instead.
-  // That is the only form that cannot overshoot the ceiling, and it is safe to retry.
+  // That is the only form that cannot overshoot the ceiling, and it is safe to retry *this
+  // single call* (the same request landing twice writes the same target twice).
+  //
+  // It is not safe against genuine concurrency: two overlapping calls for the same variant
+  // (two tabs, or a retry racing the original) both read the same starting quantity here and
+  // each write the same computed total, so one caller's addition is silently lost. The API
+  // has no compare-and-swap primitive to close that gap; it's a documented trade-off
+  // (README, "Trade-offs recorded so far") rather than a bug to fix here.
   const outcome = existing
     ? await runMutation(
         client,
