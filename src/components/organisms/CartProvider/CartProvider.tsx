@@ -18,6 +18,7 @@ import {
 } from "@/hooks/useModalDialog";
 import { addToCart, removeCartLine, updateCartLine } from "@/lib/cart/actions";
 import { addRefusalMessage, canAddToLine } from "@/lib/cart/limits";
+import { GENERIC_ERROR } from "@/lib/cart/messages";
 import { cartReducer, type NewCartLine } from "@/lib/cart/reducer";
 import type { Cart } from "@/types/cart";
 
@@ -66,6 +67,13 @@ interface PendingSend {
   quantity: number;
   /** Resolves once the debounced send has completed, so callers can keep a transition open. */
   settled: Promise<void>;
+  /**
+   * Resolves `settled` without sending anything. Used when the line is removed while a
+   * quantity change is still queued: the pending change is now moot, but whatever is
+   * awaiting `settled` (the `setLineQuantity` transition that scheduled it) still needs to
+   * be released, or it hangs forever and `isPending` never clears.
+   */
+  cancel: () => void;
   /** Performs the send. Re-armed on every further click. */
   fire: () => void;
 }
@@ -111,18 +119,29 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
       let outcome: AddLineResult = { ok: true };
 
       // The transition stays open until the action settles, which is what keeps the
-      // optimistic line on screen for as long as the request is in flight.
+      // optimistic line on screen for as long as the request is in flight. `done()` runs in
+      // `finally`: if `addToCart` itself rejects (the Server Action's RPC failing, not a
+      // GraphQL error it already caught and mapped), skipping `done()` would leave this
+      // promise — and the transition awaiting it — pending forever.
       await new Promise<void>((done) => {
         startTransition(async () => {
           applyOptimistic({ type: "add", line });
 
-          const result = await addToCart(line.variantId, line.quantity);
-          if (result.ok) {
-            startTransition(() => setServerCart(result.cart));
-          } else {
-            outcome = { ok: false, error: result.error };
+          try {
+            const result = await addToCart(line.variantId, line.quantity);
+            if (result.ok) {
+              startTransition(() => setServerCart(result.cart));
+            } else {
+              outcome = { ok: false, error: result.error };
+            }
+          } catch (error) {
+            if (process.env.NODE_ENV === "development") {
+              console.error("Add to cart failed.", error);
+            }
+            outcome = { ok: false, error: GENERIC_ERROR };
+          } finally {
+            done();
           }
-          done();
         });
       });
 
@@ -151,19 +170,32 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
     }
 
     let fire!: () => void;
+    let cancel!: () => void;
     const settled = new Promise<void>((resolve) => {
+      cancel = resolve;
       fire = () => {
         const entry = pendingSends.current.get(lineId);
         pendingSends.current.delete(lineId);
 
         void (async () => {
-          const result = await updateCartLine(lineId, entry?.quantity ?? quantity);
-          if (result.ok) {
-            startTransition(() => setServerCart(result.cart));
-          } else {
-            setError(result.error);
+          try {
+            const result = await updateCartLine(lineId, entry?.quantity ?? quantity);
+            if (result.ok) {
+              startTransition(() => setServerCart(result.cart));
+            } else {
+              setError(result.error);
+            }
+          } catch (error) {
+            // The Server Action's own try/catch covers the GraphQL call; this one covers the
+            // RPC itself failing (a network error reaching the action at all). Either way the
+            // caller gets a message and `settled` still resolves.
+            if (process.env.NODE_ENV === "development") {
+              console.error("Cart quantity update failed.", error);
+            }
+            setError(GENERIC_ERROR);
+          } finally {
+            resolve();
           }
-          resolve();
         })();
       };
     });
@@ -172,6 +204,7 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
       timer: setTimeout(fire, QUANTITY_SEND_DELAY_MS),
       quantity,
       settled,
+      cancel,
       fire,
     });
 
@@ -193,21 +226,33 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
   const removeLine = useCallback(
     (lineId: string) => {
       setError(null);
-      // A queued quantity change for a line being removed would race the removal.
+      // A queued quantity change for a line being removed would race the removal. Cancelling
+      // it (rather than just clearing the timer) resolves the `settled` promise the earlier
+      // `setLineQuantity` transition is awaiting — without this, that transition never
+      // finishes, `isPending` never clears, and the next attempted change silently stalls
+      // behind it.
       const pending = pendingSends.current.get(lineId);
       if (pending) {
         clearTimeout(pending.timer);
         pendingSends.current.delete(lineId);
+        pending.cancel();
       }
 
       startTransition(async () => {
         applyOptimistic({ type: "remove", lineId });
 
-        const result = await removeCartLine(lineId);
-        if (result.ok) {
-          startTransition(() => setServerCart(result.cart));
-        } else {
-          setError(result.error);
+        try {
+          const result = await removeCartLine(lineId);
+          if (result.ok) {
+            startTransition(() => setServerCart(result.cart));
+          } else {
+            setError(result.error);
+          }
+        } catch (error) {
+          if (process.env.NODE_ENV === "development") {
+            console.error("Cart line removal failed.", error);
+          }
+          setError(GENERIC_ERROR);
         }
       });
     },

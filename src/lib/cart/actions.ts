@@ -15,6 +15,7 @@ import { readCartId, writeCartId } from "./cookie";
 import { CART_FETCH_CONTEXT, getCartWith } from "./fetchers";
 import { addRefusalMessage, canAddToLine, clampQuantity, MIN_QUANTITY } from "./limits";
 import { toCart } from "./mappers";
+import { GENERIC_ERROR } from "./messages";
 
 /**
  * Cart mutations.
@@ -30,8 +31,8 @@ import { toCart } from "./mappers";
  */
 export type CartActionResult = { ok: true; cart: Cart } | { ok: false; error: string };
 
-/** Shown when there is nothing more specific and nothing worth exposing. */
-const GENERIC_ERROR = "Something went wrong. Please try again.";
+// `"use server"` files may only export async functions, so the shared message lives in its
+// own plain module rather than being exported from here.
 
 // The API's own `userErrors` messages are written for developers ("The specified cart does
 // not exist."), so they are mapped rather than displayed. Anything unrecognised falls back to
