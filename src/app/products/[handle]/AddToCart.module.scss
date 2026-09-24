@@ -1,0 +1,36 @@
+@use "../../../styles/breakpoints" as *;
+
+.addToCart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+// Quantity and the call to action share a row once there is width for it, as in the PDP
+// reference. The button takes the remaining space so it stays the dominant control.
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+
+  @include bp(md) {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.soldOut {
+  margin: 0;
+  font-size: var(--text-small-size);
+  color: var(--color-text-muted);
+}
+
+.submit {
+  width: 100%;
+
+  @include bp(md) {
+    flex: 1;
+    // Aligns with the stepper's controls rather than its label.
+    min-height: var(--size-touch-target);
+  }
+}

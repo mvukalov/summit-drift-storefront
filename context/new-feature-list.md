@@ -20,4 +20,5 @@ Ideas that are **out of scope for the MVP**. Add here instead of building them. 
 - **Visual regression tests** — Storybook + Chromatic or Playwright screenshots
 - **Bundle analysis in CI** — fail on size regressions
 - **Real User Monitoring** — Web Vitals reported from production
+- **Content-Security-Policy header** — defence in depth behind the `descriptionHtml` sanitizer: a `script-src` without `unsafe-inline` makes even a sanitizer bypass inert. Next 16 `next.config.ts` headers make it small; the `JsonLd` `application/ld+json` blocks are not executable and are unaffected (see `docs/html-sanitization.md`)
 - **Lightweight SEO query** — `generateMetadata` on the collection page calls `getCollection`, fetching 250 products to read a title and description (measured: 2 network hits per render, Apollo does not dedupe across differing sort variables). A `CollectionSeo` document (handle → title, description) would serve metadata on collection and product pages alike

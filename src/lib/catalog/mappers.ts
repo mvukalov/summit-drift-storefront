@@ -4,8 +4,18 @@ import type {
   MenuItemFragment,
   MoneyFragment,
   ProductCardFragment,
+  ProductDetailFragment,
+  ProductVariantFragment,
 } from "@/lib/graphql/generated/graphql";
-import type { CollectionSummary, Image, Money, ProductCard, ProductOption } from "@/types/catalog";
+import type {
+  CollectionSummary,
+  Image,
+  Money,
+  ProductCard,
+  ProductDetail,
+  ProductOption,
+  ProductVariant,
+} from "@/types/catalog";
 import type { MenuItem } from "@/types/navigation";
 
 // Fields are copied explicitly so GraphQL's `__typename` never reaches domain objects.
@@ -18,8 +28,30 @@ function toImage(image: ImageFragment | null): Image | null {
   return { url: image.url, altText: image.altText, width: image.width, height: image.height };
 }
 
-function toProductOption(option: ProductCardFragment["options"][number]): ProductOption {
+function toProductOption(
+  option: ProductCardFragment["options"][number] | ProductDetailFragment["options"][number],
+): ProductOption {
   return { name: option.name, values: [...option.values] };
+}
+
+function toMoneyOrNull(money: MoneyFragment | null): Money | null {
+  return money ? toMoney(money) : null;
+}
+
+export function toProductVariant(variant: ProductVariantFragment): ProductVariant {
+  return {
+    id: variant.id,
+    title: variant.title,
+    sku: variant.sku,
+    availableForSale: variant.availableForSale,
+    selectedOptions: variant.selectedOptions.map((option) => ({
+      name: option.name,
+      value: option.value,
+    })),
+    price: toMoney(variant.price),
+    compareAtPrice: toMoneyOrNull(variant.compareAtPrice),
+    image: toImage(variant.image),
+  };
 }
 
 function isGreater(a: Money, b: Money): boolean {
@@ -67,4 +99,20 @@ export function toProductCard(product: ProductCardFragment): ProductCard {
 export function toMenuItem(item: MenuItemFragment): MenuItem | null {
   if (!item.url) return null;
   return { title: item.title, href: new URL(item.url).pathname };
+}
+
+// `descriptionHtml` is copied through unsanitized on purpose: `RichText` sanitizes at render
+// time and is the single choke point, so doing it here too would spread the responsibility
+// across two layers (docs/html-sanitization.md, decision 3).
+export function toProductDetail(product: ProductDetailFragment): ProductDetail {
+  return {
+    handle: product.handle,
+    title: product.title,
+    vendor: product.vendor,
+    description: product.description,
+    descriptionHtml: product.descriptionHtml,
+    options: product.options.map(toProductOption),
+    images: product.images.nodes.map(toImage).filter((image) => image !== null),
+    variants: product.variants.nodes.map(toProductVariant),
+  };
 }

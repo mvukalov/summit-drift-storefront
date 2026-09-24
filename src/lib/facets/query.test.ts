@@ -3,7 +3,6 @@ import {
   clearFacets,
   collectionHref,
   countActiveFacets,
-  hasActiveFacets,
   selectPriceRange,
   setOnSale,
   toggleOptionValue,
@@ -90,18 +89,6 @@ describe("clearFacets", () => {
   // A shared constant would hand every caller the same mutable object.
   it("returns a fresh object each time", () => {
     expect(clearFacets()).not.toBe(clearFacets());
-  });
-});
-
-describe("hasActiveFacets", () => {
-  it.each([
-    ["nothing selected", select(), false],
-    ["an option value", select({ options: { color: ["moss"] } }), true],
-    ["a price range", select({ price: { min: 1, max: 2 } }), true],
-    ["the sale filter", select({ onSale: true }), true],
-    ["an axis left empty", select({ options: { color: [] } }), false],
-  ])("is %s → %s", (_label, selected, expected) => {
-    expect(hasActiveFacets(selected)).toBe(expected);
   });
 });
 

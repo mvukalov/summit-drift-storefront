@@ -5,13 +5,20 @@ import {
   CollectionsDocument,
   FeaturedProductsDocument,
   MainMenuDocument,
+  ProductByHandleDocument,
 } from "@/lib/graphql/generated/graphql";
 import { collectionByHandleFixture } from "@/test/msw/fixtures/collectionByHandle";
 import { featuredProductsFixture } from "@/test/msw/fixtures/featuredProducts";
 import { mainMenuFixture } from "@/test/msw/fixtures/mainMenu";
 import { server } from "@/test/msw/server";
 import { shop } from "@/test/msw/handlers";
-import { getCollection, getCollections, getFeaturedProducts, getMainMenu } from "./fetchers";
+import {
+  getCollection,
+  getCollections,
+  getFeaturedProducts,
+  getMainMenu,
+  getProduct,
+} from "./fetchers";
 
 describe("getCollections", () => {
   it("returns every collection as a CollectionSummary", async () => {
@@ -254,5 +261,39 @@ describe("getMainMenu", () => {
     server.use(shop.query(MainMenuDocument, () => HttpResponse.error()));
 
     await expect(getMainMenu()).rejects.toThrow();
+  });
+});
+
+describe("getProduct", () => {
+  it("returns the product with all of its variants", async () => {
+    const product = await getProduct("waterproof-wading-jacket-with-breathable-shell");
+
+    expect(product?.title).toBe("Waterproof Wading Jacket With Breathable Shell");
+    expect(product?.variants).toHaveLength(12);
+    expect(product?.images).toHaveLength(3);
+  });
+
+  // The API answers an unknown handle with `product: null` and no error, so the fetcher has
+  // to distinguish that from a failure; the route turns the null into a 404.
+  it("returns null for an unknown handle", async () => {
+    await expect(getProduct("does-not-exist")).resolves.toBeNull();
+  });
+
+  it("rejects on GraphQL errors instead of returning null", async () => {
+    server.use(
+      shop.query(ProductByHandleDocument, () =>
+        HttpResponse.json({ errors: [{ message: "Throttled" }] }),
+      ),
+    );
+
+    await expect(getProduct("waterproof-wading-jacket-with-breathable-shell")).rejects.toThrow();
+  });
+
+  // A response with neither data nor errors is malformed. Returning null would turn a real
+  // product into a 404, so it has to throw and reach the error boundary instead.
+  it("rejects on a response carrying no data at all", async () => {
+    server.use(shop.query(ProductByHandleDocument, () => HttpResponse.json({ data: null })));
+
+    await expect(getProduct("waterproof-wading-jacket-with-breathable-shell")).rejects.toThrow();
   });
 });

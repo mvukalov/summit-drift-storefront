@@ -3,7 +3,6 @@ import {
   DEFAULT_SORT,
   SORT_OPTIONS,
   parseSortParam,
-  serializeSortParam,
   toSortVariables,
   type SortOption,
 } from "./sort";
@@ -32,28 +31,6 @@ describe("parseSortParam", () => {
   // `?sort=a&sort=b` reaches the page as an array.
   it("falls back to the default for a repeated param", () => {
     expect(parseSortParam(["price-asc", "price-desc"])).toBe(DEFAULT_SORT);
-  });
-});
-
-describe("serializeSortParam", () => {
-  it("returns an empty string for the default, so the URL stays clean", () => {
-    expect(serializeSortParam(DEFAULT_SORT)).toBe("");
-  });
-
-  it.each([
-    ["price-asc", "?sort=price-asc"],
-    ["price-desc", "?sort=price-desc"],
-    ["best-selling", "?sort=best-selling"],
-  ] as const)("serializes %s", (sort, expected) => {
-    expect(serializeSortParam(sort)).toBe(expected);
-  });
-
-  it("round-trips every option back through the parser", () => {
-    for (const sort of ALL_OPTIONS) {
-      const query = serializeSortParam(sort);
-      const value = new URLSearchParams(query).get("sort") ?? undefined;
-      expect(parseSortParam(value)).toBe(sort);
-    }
   });
 });
 

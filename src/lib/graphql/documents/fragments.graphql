@@ -45,3 +45,50 @@ fragment ProductCard on Product {
     }
   }
 }
+
+fragment ProductVariant on ProductVariant {
+  id
+  title
+  sku
+  availableForSale
+  selectedOptions {
+    name
+    value
+  }
+  price {
+    ...Money
+  }
+  compareAtPrice {
+    ...Money
+  }
+  # Every variant in this catalog reports the product's featured image (verified across all
+  # 30 products, 2026-09-23), but the field is per-variant, so the picker honours it.
+  image {
+    ...Image
+  }
+}
+
+fragment ProductDetail on Product {
+  handle
+  title
+  # The brand for the PDP's Product JSON-LD; uniform across the catalog.
+  vendor
+  # Plain text. Used for metadata and JSON-LD: `seo.description` is unusable here (17 of 30
+  # products return HTML in it and 23 are truncated mid-sentence, verified 2026-09-23).
+  description
+  descriptionHtml
+  options {
+    name
+    values
+  }
+  images(first: 10) {
+    nodes {
+      ...Image
+    }
+  }
+  variants(first: 100) {
+    nodes {
+      ...ProductVariant
+    }
+  }
+}

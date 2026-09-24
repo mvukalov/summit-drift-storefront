@@ -45,14 +45,6 @@ export function clearFacets(): SelectedFacets {
   return { options: {}, price: null, onSale: false };
 }
 
-export function hasActiveFacets(selected: SelectedFacets): boolean {
-  return (
-    selected.onSale ||
-    selected.price !== null ||
-    Object.values(selected.options).some((values) => values.length > 0)
-  );
-}
-
 /** How many separate filters are active, for the mobile trigger's "Filters (3)". */
 export function countActiveFacets(selected: SelectedFacets): number {
   const options = Object.values(selected.options).reduce(

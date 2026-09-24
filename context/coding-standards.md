@@ -49,6 +49,7 @@
 - `src/components/organisms/` — Header, ProductGrid, VariantPicker, CartDrawer…
 - Atoms don't import molecules; molecules don't import organisms.
 - Every atom and molecule has a Storybook story covering its states (default, hover/focus, disabled, loading, error where relevant).
+- **Exception:** a component with no visual output needs no story. `JsonLd` renders a `<script>` tag and nothing else, so a story would be an empty page (established in `context/features/008-collection-page-spec.md`). Such components are still unit-tested.
 
 ## Accessibility
 
@@ -71,9 +72,12 @@ src/
   hooks/                   custom hooks
   lib/
     graphql/               documents, generated types, Apollo clients
+    catalog/               fetchers + mappers: GraphQL types → domain types
     facets/                derive / apply / URL (de)serialize — pure TS
     cart/                  reducer, optimistic logic, cookie helpers — pure TS
-    format/                money, option-name normalization
+    format/                money, option-name normalization, colors
+    sanitize/              allowlist sanitizer for API-supplied HTML — pure TS
+    seo/                   canonical URLs, breadcrumbs, structured data
   styles/                  tokens, mixins, breakpoints, globals
   types/                   domain types
 e2e/                       Playwright specs

@@ -15,6 +15,7 @@ export function JsonLd({ data }: JsonLdProps) {
     <script
       type="application/ld+json"
       // Sanitized above: the only escape hatch for structured data (coding standards §Security).
+      // eslint-disable-next-line react/no-danger
       dangerouslySetInnerHTML={{ __html: json }}
     />
   );

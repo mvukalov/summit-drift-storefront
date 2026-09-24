@@ -129,6 +129,7 @@
   // Semantic: sizing
   // ---------------------------------------------------------------------------
   --size-touch-target: 2.75rem; // 44px: minimum height of interactive controls
+  --size-thumb: 4.5rem; // 72px: product gallery thumbnail
   --ratio-product-image: 4 / 7; // native 768×1344 catalog images; frames reserve it to avoid CLS
 
   // ---------------------------------------------------------------------------
