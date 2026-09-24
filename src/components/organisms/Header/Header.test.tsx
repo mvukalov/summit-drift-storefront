@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { renderWithCart, testCart, testLine } from "@/test/cart";
+import { stubDialog, unstubDialog } from "@/test/dialog";
 import type { MenuItem } from "@/types/navigation";
 import { Header } from "./Header";
 
@@ -14,27 +15,11 @@ const ITEMS: MenuItem[] = [
   { title: "Trail Foundation Layers", href: "/collections/trail-foundation-layers" },
 ];
 
-// jsdom (v30) has no HTMLDialogElement.showModal()/close(). These stubs only toggle `open` and
-// fire `close` like a browser, so the tests cover this component's wiring (state, ARIA, focus
-// return). The browser-native parts (Escape closing the dialog, the inert page behind it
-// trapping focus) are not exercised here; they are checked in a real browser.
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  };
-  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
-    if (!this.open) return;
-    this.removeAttribute("open");
-    this.dispatchEvent(new Event("close"));
-  };
-});
-
-afterAll(() => {
-  // @ts-expect-error -- removing the test-only stubs; jsdom doesn't define these methods.
-  delete HTMLDialogElement.prototype.showModal;
-  // @ts-expect-error -- see above.
-  delete HTMLDialogElement.prototype.close;
-});
+// jsdom (v30) has no HTMLDialogElement.showModal()/close(); see src/test/dialog.ts for what
+// the stub covers and doesn't. The browser-native parts (Escape closing the dialog, the inert
+// page behind it trapping focus) are not exercised here; they are checked in a real browser.
+beforeAll(stubDialog);
+afterAll(unstubDialog);
 
 async function openMenu() {
   const user = userEvent.setup();

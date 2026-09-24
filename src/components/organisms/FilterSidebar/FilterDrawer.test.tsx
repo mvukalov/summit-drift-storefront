@@ -5,6 +5,7 @@ import { buildFacetsView } from "@/lib/facets/counts";
 import { deriveFacets } from "@/lib/facets/derive";
 import type { SelectedFacets } from "@/lib/facets/url";
 import { makeProduct } from "@/test/products";
+import { stubDialog, unstubDialog } from "@/test/dialog";
 import { FilterDrawer } from "./FilterDrawer";
 
 const push = vi.fn();
@@ -39,26 +40,11 @@ function select(overrides: Partial<SelectedFacets> = {}): SelectedFacets {
   return { options: {}, price: null, onSale: false, ...overrides };
 }
 
-// Same stubs as the header's mobile nav: jsdom (v30) has no showModal()/close(), so these
-// toggle `open` and fire `close` like a browser. The native parts — Escape closing the
-// dialog and the inert page behind it trapping focus — are checked in a real browser.
-beforeAll(() => {
-  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
-    this.setAttribute("open", "");
-  };
-  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
-    if (!this.open) return;
-    this.removeAttribute("open");
-    this.dispatchEvent(new Event("close"));
-  };
-});
-
-afterAll(() => {
-  // @ts-expect-error -- removing the test-only stubs; jsdom doesn't define these methods.
-  delete HTMLDialogElement.prototype.showModal;
-  // @ts-expect-error -- see above.
-  delete HTMLDialogElement.prototype.close;
-});
+// jsdom (v30) has no showModal()/close(); see src/test/dialog.ts for what the stub covers
+// and doesn't. The native parts — Escape closing the dialog and the inert page behind it
+// trapping focus — are checked in a real browser.
+beforeAll(stubDialog);
+afterAll(unstubDialog);
 
 beforeEach(() => {
   push.mockClear();
