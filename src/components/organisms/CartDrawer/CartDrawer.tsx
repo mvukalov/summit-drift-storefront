@@ -94,6 +94,7 @@ function CartDrawerLine({ line }: { line: CartLine }) {
   // A line the server hasn't acknowledged yet has no real id, so it cannot be addressed by a
   // mutation. Its controls stay visible but inert for the moment the request is in flight.
   const isPendingLine = isOptimisticLine(line.id);
+  const isAtMax = line.quantity >= MAX_QUANTITY;
 
   const description = line.options.map((option) => formatOptionValue(option.value)).join(" / ");
 
@@ -129,6 +130,14 @@ function CartDrawerLine({ line }: { line: CartLine }) {
         >
           Remove<VisuallyHidden> {line.title}</VisuallyHidden>
         </Button>
+
+        {/* The stepper's "+" is already disabled at the ceiling; this is the text that
+            explains why, for a screen-reader user who'd otherwise only hear "dimmed". */}
+        {isAtMax && (
+          <p className={styles.maxHint} role="status">
+            Maximum quantity reached.
+          </p>
+        )}
       </div>
     </li>
   );

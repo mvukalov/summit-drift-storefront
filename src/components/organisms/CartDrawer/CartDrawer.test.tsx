@@ -97,6 +97,20 @@ describe("CartDrawer", () => {
     expect(within(dialog).getByRole("button", { name: "Decrease quantity" })).toBeDisabled();
   });
 
+  // The "+" button is already disabled at the ceiling; this text is what explains why to a
+  // screen-reader user, who would otherwise only hear "dimmed".
+  it("explains why a line at the maximum can't be increased further", async () => {
+    const { dialog } = await openDrawer(testCart([testLine({ id: "line-1", quantity: 10 })]));
+
+    expect(within(dialog).getByRole("status")).toHaveTextContent("Maximum quantity reached.");
+  });
+
+  it("says nothing about the maximum for a line under it", async () => {
+    const { dialog } = await openDrawer();
+
+    expect(within(dialog).queryByText("Maximum quantity reached.")).not.toBeInTheDocument();
+  });
+
   describe("optimistic updates", () => {
     it("shows the new quantity before the mutation resolves, and keeps it after", async () => {
       // Held open so the assertion lands while the request is still in flight.
