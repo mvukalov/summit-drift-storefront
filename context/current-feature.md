@@ -8,18 +8,18 @@ In Progress
 
 <!-- Checkable bullet points of what success looks like -->
 
-- [ ] `src/lib/graphql/documents/search.graphql`: `Search` and `PredictiveSearch` queries; `npm run codegen`, generated output committed
-- [ ] `src/lib/search/sort.ts`: `SEARCH_SORT_OPTIONS` (relevance, price-asc, price-desc), `parseSearchSortParam`, `toSearchSortVariables` — mirrors `facets/sort.ts`
-- [ ] `src/lib/search/params.ts`: `parseSearchParams({ q, sort, page })`, Zod, never throws
-- [ ] `src/lib/search/paginate.ts`: pure `paginate(items, page, pageSize = SEARCH_PAGE_SIZE = 16)`, clamped
-- [ ] `getSearchResults(query, sort)` in `src/lib/catalog/fetchers.ts`: RSC, `first: 250`, `force-cache`, empty query short-circuits with no request
-- [ ] `src/app/search/page.tsx` (+ `loading.tsx`, `error.tsx`): SSR results page, `generateMetadata` sets `robots: { index: false }`
-- [ ] `src/hooks/useDebouncedValue.ts`: generic debounce-by-effect hook
-- [ ] `src/components/molecules/SearchCombobox/`: client component, WAI-ARIA list-autocomplete combobox, `useLazyQuery(PredictiveSearchDocument)` through `ApolloWrapper`, `MIN_QUERY_LENGTH = 2`, `predictiveSearch limit = 6`, 300 ms debounce
-- [ ] Mount `<SearchCombobox />` in `Header.tsx` next to `CartTrigger`/`MobileNav`
-- [ ] MSW fixtures + handlers for `SearchDocument`/`PredictiveSearchDocument`, keyed by `variables.query`
-- [ ] Required regression test (decision 3): `.server.test.ts` proving the `SearchResultItem` union doesn't silently drop fields the way `BaseCartLine` did without `possibleTypes`
-- [ ] Unit, component, `generateMetadata`, Storybook + a11y, and E2E coverage per the spec's Testing section
+- [x] `src/lib/graphql/documents/search.graphql`: `Search` and `PredictiveSearch` queries; `npm run codegen`, generated output committed
+- [x] `src/lib/search/sort.ts`: `SEARCH_SORT_OPTIONS` (relevance, price-asc, price-desc), `parseSearchSortParam`, `toSearchSortVariables` — mirrors `facets/sort.ts`
+- [x] `src/lib/search/params.ts`: `parseSearchParams({ q, sort, page })`, Zod, never throws (+ `searchHref`, its inverse)
+- [x] `src/lib/search/paginate.ts`: pure `paginate(items, page, pageSize = SEARCH_PAGE_SIZE = 16)`, clamped
+- [x] `getSearchResults(query, sort)` in `src/lib/catalog/fetchers.ts`: RSC, `first: 250`, `force-cache`, empty query short-circuits with no request
+- [x] `src/app/search/page.tsx` (+ `loading.tsx`, `error.tsx`): SSR results page, `generateMetadata` sets `robots: { index: false }`
+- [x] `src/hooks/useDebouncedValue.ts`: generic debounce-by-effect hook
+- [x] `src/components/molecules/SearchCombobox/`: client component, WAI-ARIA list-autocomplete combobox, `useLazyQuery(PredictiveSearchDocument)` through `ApolloWrapper`, `MIN_QUERY_LENGTH = 2`, `predictiveSearch limit = 6`, 300 ms debounce
+- [x] Mount `<SearchCombobox />` in `Header.tsx` next to `CartTrigger`/`MobileNav`
+- [x] MSW fixtures + handlers for `SearchDocument`/`PredictiveSearchDocument`, keyed by `variables.query`
+- [x] Required regression test (decision 3): `.server.test.ts` proving the `SearchResultItem` union doesn't silently drop fields the way `BaseCartLine` did without `possibleTypes`
+- [ ] Unit, component, `generateMetadata`, Storybook + a11y, and E2E coverage per the spec's Testing section — **all but E2E**: Playwright is still not a dependency, so the E2E cases were verified manually and carried over to `context/new-feature-list.md` (cart precedent)
 
 ## Notes
 
@@ -33,6 +33,10 @@ In Progress
 - Out of scope: fuzzy/typo-tolerant matching, "did you mean"/trending suggestions (`predictiveSearch.queries` is always empty on mock.shop), cursor pagination, searching articles/pages, removing `ApolloWrapper`.
 - **Verify first** (spec's own checklist, before/while implementing): (1) confirm Apollo Client 4's auto-abort with a component test — a rapid keystroke sequence must show only the last query's results; (2) one-off check that `search.productFilters` is ignored like `collection.productFilters` before assuming it.
 - No new dependencies expected — `@apollo/client` and its hooks are already installed.
+- **Verify-first results:** (1) Apollo 4 auto-abort confirmed in `SearchCombobox.test.tsx` — the superseded request's `AbortSignal` is aborted and its late response never reaches the UI; (2) `search` ignores `productFilters` (input) and returns `[]` for it (output), same as collections. Both recorded in `docs/predictive-search.md` risks 2 and 8.
+- **Decision 3 result:** the `SearchResultItem` union round-trips through `InMemoryCache` with and without `POSSIBLE_TYPES`, so no config entry was needed — now asserted rather than assumed.
+- **Found in the browser, fixed:** header overflowed at 1280 (logo and nav wrapped) and the dropdown ran off-screen at 375 → search takes its own row below md and is the header item that shrinks from md; axe critical `aria-valid-attr-value` (`aria-controls` → unrendered listbox in loading/no-results) → `aria-expanded`/`aria-controls` now follow the listbox, regression test verified to fail on the old code.
+- **Added beyond the spec's list, both small:** ArrowDown on a closed combobox reopens it with the first option active (APG list-autocomplete behaviour), and `searchHref()` as the single builder for `/search` URLs (combobox, sort control, pagination).
 
 ## History
 

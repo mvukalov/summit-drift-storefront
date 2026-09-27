@@ -46,3 +46,23 @@ instead. They are listed here so the E2E feature picks them up rather than re-de
   and 1280: 0 violations.
 - **Per-line ceiling refusal** — with a line at 10, an add is refused, **no request is made**,
   and the quantity does not change (decision 4 in `docs/cart.md`).
+
+Search E2E cases specified in `context/features/013-search-spec.md`, carried over for the same
+reason. Each was verified manually in Chromium against the real API on 2026-09-27.
+
+- **Type → suggestions → arrow → Enter → product page.** Typed "jacket", ArrowDown twice,
+  Enter landed on `/products/oversized-technical-nylon-jacket` with the list closed.
+- **Enter with nothing active → results page.** After Escape, Enter went to `/search?q=jacket`
+  (7 results, sort control, title `Search results for “jacket”`).
+- **No-match term → no-results state.** `/search?q=jaket` shows the spelling hint and no sort.
+- **Sort and page update the URL and the grid.** `?q=a` (all 30 products): price-desc re-sorts
+  from $485, `page=2` shows the remaining 14, Previous/Next keep the sort. Focus stays on the
+  sort control through the re-render — the regression the collection page once had.
+- **Direct link / reload.** `/search?q=a&sort=price-asc&page=2` renders that exact set;
+  `sort=bogus&page=-4` falls back to relevance and page 1.
+- **`noindex` in the served HTML.** `<meta name="robots" content="noindex, follow">` on results,
+  no-match and no-query pages; no canonical.
+- **axe on the open combobox and the results page.** Manually via injected axe-core at 375 and
+  1280, in the results, no-results, no-query and no-match states: 0 violations. This run is
+  what caught `aria-controls` pointing at an unrendered listbox (critical), now fixed and
+  covered by a component test.

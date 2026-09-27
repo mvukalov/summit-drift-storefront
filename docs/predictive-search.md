@@ -28,7 +28,7 @@ was reserved for. The reason to prefer this over rolling a fetch-based solution:
 4 aborts a `useLazyQuery` execution outright when a new one starts before the previous resolves**
 (verified via Context7, Apollo's 4.x migration notes) — the exact "stale-response race" the
 research brief asks about, solved by the library instead of by hand-written request-id
-tracking or `AbortController` plumbing. Debounce the *keystroke* (300ms, matching the cart
+tracking or `AbortController` plumbing. Debounce the _keystroke_ (300ms, matching the cart
 stepper's existing convention) with a small `useDebouncedValue` hook so a fast typist doesn't
 fire ten requests; Apollo's cancellation is the backstop for whatever slips past that.
 
@@ -70,47 +70,47 @@ predictive-search feature spec.
 
 ### Predictive combobox transport
 
-| Option                                                        | Pros                                                                                                    | Cons                                                                                                             | Verdict                                                          |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Client Apollo `useLazyQuery`** (recommended)                | Typed via codegen; auto-cancels superseded requests (verified, Apollo 4); reuses `ApolloWrapper` already in the tree | Package is 0.x/4.x and still settling (noted in `apollo-nextjs.md`); browser bundle already pays for it              | **Recommended** — answers the open question left by two prior docs |
-| Server Action (`"use server"`)                                | Fits the project's existing Server Action pattern for the cart                                            | Shares the cart's per-client sequential dispatch queue (verified) — a search keystroke can block a cart click        | Rejected                                                          |
-| Route Handler + `fetch`/`AbortController`                     | Full manual control; no Apollo dependency in the path                                                     | Re-implements typed documents and cancellation Apollo already does; CORS makes the proxy pointless (verified)        | Rejected                                                          |
-| Plain client `fetch` (no Apollo, no Route Handler)             | Smallest code path                                                                                        | Hand-rolled `AbortController` bookkeeping per keystroke; no typed documents; still needs the same debounce logic     | Rejected                                                          |
+| Option                                             | Pros                                                                                                                 | Cons                                                                                                             | Verdict                                                            |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Client Apollo `useLazyQuery`** (recommended)     | Typed via codegen; auto-cancels superseded requests (verified, Apollo 4); reuses `ApolloWrapper` already in the tree | Package is 0.x/4.x and still settling (noted in `apollo-nextjs.md`); browser bundle already pays for it          | **Recommended** — answers the open question left by two prior docs |
+| Server Action (`"use server"`)                     | Fits the project's existing Server Action pattern for the cart                                                       | Shares the cart's per-client sequential dispatch queue (verified) — a search keystroke can block a cart click    | Rejected                                                           |
+| Route Handler + `fetch`/`AbortController`          | Full manual control; no Apollo dependency in the path                                                                | Re-implements typed documents and cancellation Apollo already does; CORS makes the proxy pointless (verified)    | Rejected                                                           |
+| Plain client `fetch` (no Apollo, no Route Handler) | Smallest code path                                                                                                   | Hand-rolled `AbortController` bookkeeping per keystroke; no typed documents; still needs the same debounce logic | Rejected                                                           |
 
 ### Results page pagination
 
-| Option                                                                     | Pros                                                                                                  | Cons                                                                                        | Verdict                                                       |
-| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| **Fetch once (`first: 250`), paginate in JS by `?page=`** (recommended)   | Matches the collection page's own pattern; `q`/`page` are already reserved params; one request, cacheable | Not a real solution past ~250 matches — but neither is the collection page, and it's documented | **Recommended**                                               |
-| GraphQL cursor pagination (`first`/`after` in the URL)                     | "Correct" for an unbounded catalog                                                                        | The catalog has 30 products total; cursors are opaque and don't compose with a `sort` change as cleanly as a plain page number | Rejected for this catalog size — revisit if the catalog grows past ~250 |
+| Option                                                                  | Pros                                                                                                      | Cons                                                                                                                           | Verdict                                                                 |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Fetch once (`first: 250`), paginate in JS by `?page=`** (recommended) | Matches the collection page's own pattern; `q`/`page` are already reserved params; one request, cacheable | Not a real solution past ~250 matches — but neither is the collection page, and it's documented                                | **Recommended**                                                         |
+| GraphQL cursor pagination (`first`/`after` in the URL)                  | "Correct" for an unbounded catalog                                                                        | The catalog has 30 products total; cursors are opaque and don't compose with a `sort` change as cleanly as a plain page number | Rejected for this catalog size — revisit if the catalog grows past ~250 |
 
 ### Results page caching model
 
-| Option                                          | Pros                                                                 | Cons                                                     | Verdict                                                        |
-| -------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| **`force-cache` (the RSC client's default)**   | Search text isn't per-visitor; identical queries reuse the entry (cache key includes the POST body, verified in `apollo-nextjs.md`) | Every distinct query string gets its own cache entry — unbounded for free text, though the LRU is in-memory and ephemeral | **Recommended**, flagged as a risk below                        |
-| `no-store` (like the cart)                      | No cache growth concern                                                  | No reason to opt out — nothing here is per-visitor            | Rejected                                                        |
+| Option                                       | Pros                                                                                                                                | Cons                                                                                                                      | Verdict                                  |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **`force-cache` (the RSC client's default)** | Search text isn't per-visitor; identical queries reuse the entry (cache key includes the POST body, verified in `apollo-nextjs.md`) | Every distinct query string gets its own cache entry — unbounded for free text, though the LRU is in-memory and ephemeral | **Recommended**, flagged as a risk below |
+| `no-store` (like the cart)                   | No cache growth concern                                                                                                             | No reason to opt out — nothing here is per-visitor                                                                        | Rejected                                 |
 
 ## Verified facts
 
 ### Live API (`https://apparel-outdoor.mock.shop/api`, 2026-09-27)
 
-| #   | Behaviour                        | Observed                                                                                                                  |
-| --- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Matching                        | Case-insensitive **substring** match, no typo tolerance: `"JACKET"` and `"jack"` both match 7 products; `"jaket"` matches 0 |
-| 2   | Single-character query          | Works, not rejected: `"j"` → 14 results, `"a"` → all 30                                                                     |
-| 3   | Empty / whitespace query        | `totalCount: 0`, no error                                                                                                    |
-| 4   | Injection safety                | A query string like `jacket" OR title:*` is passed as a GraphQL variable, matches nothing literally — no syntax is parsed  |
-| 5   | `search.edges.node` type        | **Union** `SearchResultItem` = `Article \| Page \| Product` (verified via introspection) — needs `... on Product { }`      |
-| 6   | `search` sort keys              | Enum `SearchSortKeys`: only `PRICE` and `RELEVANCE` (no `BEST_SELLING`/`CREATED` like collections)                          |
-| 7   | `search` pagination             | Full `first`/`after`/`last`/`before` cursor support, `totalCount`, `pageInfo` — all standard Relay-style                    |
-| 8   | `search.productFilters`          | Present on the connection but out of scope to check — collections already proved `filters:`/`productFilters` are ignored (project overview §2); assumed the same here |
-| 9   | `prefix` argument (`NONE`/`LAST`)| **No observable effect** on mock.shop: identical `totalCount` for a partial term either way                                |
-| 10  | `predictiveSearch.products`     | A plain `[Product!]!` list — **not** a union, so `...ProductCard` applies directly, no inline fragment needed              |
-| 11  | `predictiveSearch` other fields | `collections`, `articles`, `pages` always empty for this catalog (expected — no blog/pages seeded); `queries` (term suggestions) is **always empty**, even for common prefixes — don't build UI around it |
-| 12  | `predictiveSearch.limit`        | Server-enforced range: `limit: 0` → GraphQL error `"limit must be between 1 and 10"`; default (omitted) is **10**            |
-| 13  | `predictiveSearch` cost         | 2–5 `requestedQueryCost` per call in testing — cheap enough for one call per debounced keystroke                            |
-| 14  | Unavailable products            | Not separately tested here; the catalog already has 0/360 unavailable variants (project overview §2), so this path stays synthetic like the PDP's |
+| #   | Behaviour                         | Observed                                                                                                                                                                                                  |
+| --- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Matching                          | Case-insensitive **substring** match, no typo tolerance: `"JACKET"` and `"jack"` both match 7 products; `"jaket"` matches 0                                                                               |
+| 2   | Single-character query            | Works, not rejected: `"j"` → 14 results, `"a"` → all 30                                                                                                                                                   |
+| 3   | Empty / whitespace query          | `totalCount: 0`, no error                                                                                                                                                                                 |
+| 4   | Injection safety                  | A query string like `jacket" OR title:*` is passed as a GraphQL variable, matches nothing literally — no syntax is parsed                                                                                 |
+| 5   | `search.edges.node` type          | **Union** `SearchResultItem` = `Article \| Page \| Product` (verified via introspection) — needs `... on Product { }`                                                                                     |
+| 6   | `search` sort keys                | Enum `SearchSortKeys`: only `PRICE` and `RELEVANCE` (no `BEST_SELLING`/`CREATED` like collections)                                                                                                        |
+| 7   | `search` pagination               | Full `first`/`after`/`last`/`before` cursor support, `totalCount`, `pageInfo` — all standard Relay-style                                                                                                  |
+| 8   | `search.productFilters`           | Ignored as input and empty as output, like collections — checked during implementation, see risk 8                                                                                                        |
+| 9   | `prefix` argument (`NONE`/`LAST`) | **No observable effect** on mock.shop: identical `totalCount` for a partial term either way                                                                                                               |
+| 10  | `predictiveSearch.products`       | A plain `[Product!]!` list — **not** a union, so `...ProductCard` applies directly, no inline fragment needed                                                                                             |
+| 11  | `predictiveSearch` other fields   | `collections`, `articles`, `pages` always empty for this catalog (expected — no blog/pages seeded); `queries` (term suggestions) is **always empty**, even for common prefixes — don't build UI around it |
+| 12  | `predictiveSearch.limit`          | Server-enforced range: `limit: 0` → GraphQL error `"limit must be between 1 and 10"`; default (omitted) is **10**                                                                                         |
+| 13  | `predictiveSearch` cost           | 2–5 `requestedQueryCost` per call in testing — cheap enough for one call per debounced keystroke                                                                                                          |
+| 14  | Unavailable products              | Not separately tested here; the catalog already has 0/360 unavailable variants (project overview §2), so this path stays synthetic like the PDP's                                                         |
 
 ### Apollo Client 4 (Context7 `/apollographql/apollo-client`)
 
@@ -235,9 +235,7 @@ const SEARCH_SORT_VARIABLES: Record<SearchSortOption, SearchSortVariables> = {
   "price-desc": { sortKey: "PRICE", reverse: true },
 };
 
-const schema = z
-  .enum(SEARCH_SORT_OPTIONS.map((o) => o.value))
-  .catch(DEFAULT_SEARCH_SORT);
+const schema = z.enum(SEARCH_SORT_OPTIONS.map((o) => o.value)).catch(DEFAULT_SEARCH_SORT);
 
 export function parseSearchSortParam(value: string | string[] | undefined): SearchSortOption {
   return schema.parse(value);
@@ -335,9 +333,7 @@ the inline fragment, which has the same shape `CollectionByHandle`'s `products.n
 ### 6. `src/app/search/page.tsx`
 
 ```tsx
-export async function generateMetadata({
-  searchParams,
-}: PageProps<"/search">): Promise<Metadata> {
+export async function generateMetadata({ searchParams }: PageProps<"/search">): Promise<Metadata> {
   const { q } = parseSearchParams(await searchParams);
   return {
     title: q ? `Search results for "${q}"` : "Search",
@@ -454,13 +450,15 @@ leaf alongside two existing ones, same composition pattern already in place.
    own Next data-cache entry (cache key includes the POST body, per `apollo-nextjs.md`). The
    runtime cache is an in-memory LRU with no persistence, so this is a memory-shape concern, not
    a correctness one — the same way `apollo-nextjs.md` accepted it for catalog data.
-2. **Apollo 4's auto-abort is doc-verified, not yet code-verified in this repo.** Confirm with a
-   component test that a rapid sequence of keystrokes results in the combobox showing the last
-   query's results, not an earlier one that happened to resolve later.
+2. **Resolved during implementation (2026-09-27): Apollo 4's auto-abort holds in this repo.**
+   `SearchCombobox.test.tsx` fires "ja" then "jacket", holds "ja" open, and asserts that its
+   request's `AbortSignal` is aborted once "jacket" starts. It then releases "ja" with a
+   different (empty) answer after "jacket"'s results are on screen, and asserts the combobox
+   does not flip to "No results".
 3. **Decided (see Decisions 3): a regression test is required, not optional.** `Search.edges.node`
    is a union (`SearchResultItem`); `PredictiveSearch.products` is not. The plan never defines a
    fragment directly on the union (only `...ProductCard` inside `... on Product`), which
-   *should* mean it doesn't need the `possibleTypes` cache trap `apollo-nextjs.md` documented for
+   _should_ mean it doesn't need the `possibleTypes` cache trap `apollo-nextjs.md` documented for
    the cart's `BaseCartLine` fragment — but that failure mode was **silent** (fields quietly drop
    to nothing, no error, no failing mapper test), so the reasoning alone isn't trusted. See the
    testing strategy's "`Search` union regression test."
@@ -474,9 +472,11 @@ leaf alongside two existing ones, same composition pattern already in place.
    they were UX judgment calls, now confirmed.
 7. **Long or unusual query strings are untested against the live API.** The `.max(200)` in
    `qSchema` is defensive, not a verified server limit.
-8. **`search.productFilters` was not independently probed this session** — assumed empty like
-   `collection.productFilters` (verified in `apollo-nextjs.md`/project overview §2), since both
-   are documented as ignoring `filters:` input. Worth a one-off check before relying on it.
+8. **Resolved during implementation (2026-09-27): `search` ignores `productFilters` too.**
+   `query: "jacket"` with `productFilters: [{ price: { max: 50 } }]` still returned all 7
+   jackets (cheapest $75), and `[{ available: false }]` also returned all 7 although no variant
+   is unavailable. The connection's own `productFilters` facet list is `[]`. Same behaviour as
+   collections, so any future search facets would have to be derived in `src/lib/facets/`.
 
 ## Sources
 
