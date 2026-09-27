@@ -1,18 +1,38 @@
-# Current Feature
+# Current Feature: Search
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Checkable bullet points of what success looks like -->
 
-- [ ]
+- [ ] `src/lib/graphql/documents/search.graphql`: `Search` and `PredictiveSearch` queries; `npm run codegen`, generated output committed
+- [ ] `src/lib/search/sort.ts`: `SEARCH_SORT_OPTIONS` (relevance, price-asc, price-desc), `parseSearchSortParam`, `toSearchSortVariables` — mirrors `facets/sort.ts`
+- [ ] `src/lib/search/params.ts`: `parseSearchParams({ q, sort, page })`, Zod, never throws
+- [ ] `src/lib/search/paginate.ts`: pure `paginate(items, page, pageSize = SEARCH_PAGE_SIZE = 16)`, clamped
+- [ ] `getSearchResults(query, sort)` in `src/lib/catalog/fetchers.ts`: RSC, `first: 250`, `force-cache`, empty query short-circuits with no request
+- [ ] `src/app/search/page.tsx` (+ `loading.tsx`, `error.tsx`): SSR results page, `generateMetadata` sets `robots: { index: false }`
+- [ ] `src/hooks/useDebouncedValue.ts`: generic debounce-by-effect hook
+- [ ] `src/components/molecules/SearchCombobox/`: client component, WAI-ARIA list-autocomplete combobox, `useLazyQuery(PredictiveSearchDocument)` through `ApolloWrapper`, `MIN_QUERY_LENGTH = 2`, `predictiveSearch limit = 6`, 300 ms debounce
+- [ ] Mount `<SearchCombobox />` in `Header.tsx` next to `CartTrigger`/`MobileNav`
+- [ ] MSW fixtures + handlers for `SearchDocument`/`PredictiveSearchDocument`, keyed by `variables.query`
+- [ ] Required regression test (decision 3): `.server.test.ts` proving the `SearchResultItem` union doesn't silently drop fields the way `BaseCartLine` did without `possibleTypes`
+- [ ] Unit, component, `generateMetadata`, Storybook + a11y, and E2E coverage per the spec's Testing section
 
 ## Notes
 
 <!-- Constraints, decisions, links to specs and research docs -->
+
+- Spec: `context/features/013-search-spec.md`. Source of truth for all decisions: `docs/predictive-search.md` ("Decisions", 2026-09-27) — read before implementing, don't re-derive.
+- Prior research this builds on: `docs/apollo-nextjs.md` (decision 4 — client Apollo reserved for predictive search), `docs/cart.md` (risk 5 — the same open question, now answered).
+- **Decisions already made, don't relitigate:** (1) `MIN_QUERY_LENGTH = 2`, `SEARCH_PAGE_SIZE = 16`, `predictiveSearch limit = 6`, debounce 300 ms, all approved as-is; (2) `force-cache` cache growth accepted (in-memory LRU, no persistence); (3) the `Search`-union regression test is required, not optional.
+- **Why not a Server Action or Route Handler for the combobox** — see spec's Technical section: Server Actions dispatch one at a time per client (would contend with cart mutations); a Route Handler would just re-implement what Apollo's `useLazyQuery` already gives for free (typed docs, auto-cancellation of superseded calls in Apollo Client 4).
+- **Pagination is JS-side** (`paginate()` slicing a `first: 250` result), not GraphQL cursors — the catalog is 30 products total. Revisit only if it grows past ~250.
+- Out of scope: fuzzy/typo-tolerant matching, "did you mean"/trending suggestions (`predictiveSearch.queries` is always empty on mock.shop), cursor pagination, searching articles/pages, removing `ApolloWrapper`.
+- **Verify first** (spec's own checklist, before/while implementing): (1) confirm Apollo Client 4's auto-abort with a component test — a rapid keystroke sequence must show only the last query's results; (2) one-off check that `search.productFilters` is ignored like `collection.productFilters` before assuming it.
+- No new dependencies expected — `@apollo/client` and its hooks are already installed.
 
 ## History
 
