@@ -1,0 +1,63 @@
+@use "../../styles/breakpoints" as *;
+@use "../../styles/grid" as *;
+
+// Page gutters match the header, footer, Home and the collection page.
+.page {
+  padding-block: var(--space-5) var(--space-6);
+  padding-inline: var(--space-3);
+
+  @include bp(md) {
+    padding-inline: var(--space-4);
+  }
+}
+
+.header {
+  max-width: 45rem;
+  margin-bottom: var(--space-4);
+}
+
+// The row above the grid: count, then sort; side by side from md.
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-block: 1px solid var(--color-divider);
+
+  @include bp(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+// No query and no matches: distinct copy, same quiet treatment as the collection's states.
+.message {
+  padding-block: var(--space-6);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+// Shared with the other card grids; keep GRID_IMAGE_SIZES in sync (src/styles/_grid.scss).
+.grid {
+  @include card-grid;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-6);
+}
+
+.pageStatus {
+  color: var(--color-text-muted);
+}

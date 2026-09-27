@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { MockedProvider } from "@apollo/client/testing/react";
 import { expect } from "storybook/test";
 import type { Cart } from "@/types/cart";
 import type { MenuItem } from "@/types/navigation";
@@ -37,11 +38,17 @@ const meta = {
     },
   },
   args: { items: ITEMS },
+  // Nested as the root layout nests them: Apollo outside, the cart inside. The search combobox
+  // needs a client-side Apollo client; no responses are mocked because these stories are about
+  // the header's layout, and the combobox only queries once typed into — its own states live
+  // in Molecules/SearchCombobox.
   decorators: [
     (Story) => (
-      <CartProvider initialCart={EMPTY_CART}>
-        <Story />
-      </CartProvider>
+      <MockedProvider>
+        <CartProvider initialCart={EMPTY_CART}>
+          <Story />
+        </CartProvider>
+      </MockedProvider>
     ),
   ],
 } satisfies Meta<typeof Header>;
