@@ -9,7 +9,9 @@ import {
   CollectionsDocument,
   FeaturedProductsDocument,
   MainMenuDocument,
+  PredictiveSearchDocument,
   ProductByHandleDocument,
+  SearchDocument,
   type CartUserErrorFragment,
 } from "@/lib/graphql/generated/graphql";
 import { SHOPIFY_API_URL } from "@/lib/graphql/config";
@@ -18,7 +20,12 @@ import { collectionByHandleFixture, unknownCollectionFixture } from "./fixtures/
 import { collectionsFixture } from "./fixtures/collections";
 import { featuredProductsFixture } from "./fixtures/featuredProducts";
 import { mainMenuFixture } from "./fixtures/mainMenu";
+import { emptyPredictiveSearchFixture, predictiveSearchFixture } from "./fixtures/predictiveSearch";
 import { productByHandleFixture, unknownProductFixture } from "./fixtures/productByHandle";
+import { emptySearchFixture, searchFixture } from "./fixtures/search";
+
+/** The one query text every search/predictiveSearch fixture in this file answers to. */
+const MATCHING_QUERY = "jacket";
 
 export const shop = graphql.link(SHOPIFY_API_URL);
 
@@ -42,6 +49,19 @@ export const handlers = [
     }),
   ),
   shop.query(MainMenuDocument, () => HttpResponse.json({ data: mainMenuFixture })),
+  shop.query(SearchDocument, ({ variables }) =>
+    HttpResponse.json({
+      data: variables.query === MATCHING_QUERY ? searchFixture : emptySearchFixture,
+    }),
+  ),
+  shop.query(PredictiveSearchDocument, ({ variables }) =>
+    HttpResponse.json({
+      data:
+        variables.query === MATCHING_QUERY
+          ? predictiveSearchFixture
+          : emptyPredictiveSearchFixture,
+    }),
+  ),
 
   // Cart. These are the happy paths, all answering with the same captured cart; tests that
   // care about a specific outcome override them with `server.use`.

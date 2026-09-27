@@ -1,0 +1,26 @@
+# The whole matching set for `/search?q=` (project overview §5.1's fetch-then-derive pattern,
+# reused here): `search.edges.node` is a union (`SearchResultItem` = Article | Page | Product,
+# verified 2026-09-27), so the inline fragment is required even though `types: PRODUCT` means
+# only `Product` nodes ever come back.
+query Search($query: String!, $first: Int!, $sortKey: SearchSortKeys, $reverse: Boolean) {
+  search(query: $query, first: $first, types: PRODUCT, sortKey: $sortKey, reverse: $reverse) {
+    totalCount
+    edges {
+      node {
+        ... on Product {
+          ...ProductCard
+        }
+      }
+    }
+  }
+}
+
+# `predictiveSearch.products` is a plain `[Product!]!`, not a union, so `...ProductCard` applies
+# directly. `limit` is server-enforced 1-10 (verified 2026-09-27); the header combobox uses 6.
+query PredictiveSearch($query: String!, $limit: Int!) {
+  predictiveSearch(query: $query, limit: $limit, types: [PRODUCT]) {
+    products {
+      ...ProductCard
+    }
+  }
+}

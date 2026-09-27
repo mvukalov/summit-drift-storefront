@@ -1,3 +1,4 @@
+import { InMemoryCache } from "@apollo/client";
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import {
@@ -6,10 +7,13 @@ import {
   FeaturedProductsDocument,
   MainMenuDocument,
   ProductByHandleDocument,
+  SearchDocument,
 } from "@/lib/graphql/generated/graphql";
+import { POSSIBLE_TYPES } from "@/lib/graphql/config";
 import { collectionByHandleFixture } from "@/test/msw/fixtures/collectionByHandle";
 import { featuredProductsFixture } from "@/test/msw/fixtures/featuredProducts";
 import { mainMenuFixture } from "@/test/msw/fixtures/mainMenu";
+import { emptySearchFixture, searchFixture } from "@/test/msw/fixtures/search";
 import { server } from "@/test/msw/server";
 import { shop } from "@/test/msw/handlers";
 import {
@@ -18,6 +22,7 @@ import {
   getFeaturedProducts,
   getMainMenu,
   getProduct,
+  getSearchResults,
 } from "./fetchers";
 
 describe("getCollections", () => {
@@ -295,5 +300,144 @@ describe("getProduct", () => {
     server.use(shop.query(ProductByHandleDocument, () => HttpResponse.json({ data: null })));
 
     await expect(getProduct("waterproof-wading-jacket-with-breathable-shell")).rejects.toThrow();
+  });
+});
+
+describe("getSearchResults", () => {
+  it("returns the matching products as ProductCards, plus the total count", async () => {
+    const result = await getSearchResults("jacket");
+
+    expect(result.totalCount).toBe(7);
+    expect(result.products.map((product) => product.handle)).toEqual([
+      "waterproof-wading-jacket-with-breathable-shell",
+      "oversized-technical-nylon-jacket",
+      "ripstop-shell-jacket-with-storm-guard",
+    ]);
+  });
+
+  it("short-circuits an empty query without calling the API", async () => {
+    let called = false;
+    server.use(
+      shop.query(SearchDocument, () => {
+        called = true;
+        return HttpResponse.json({ data: emptySearchFixture });
+      }),
+    );
+
+    const result = await getSearchResults("");
+
+    expect(result).toEqual({ products: [], totalCount: 0 });
+    expect(called).toBe(false);
+  });
+
+  it("returns an empty result for a query with no matches", async () => {
+    const result = await getSearchResults("no-such-product");
+
+    expect(result).toEqual({ products: [], totalCount: 0 });
+  });
+
+  describe("sort variables", () => {
+    function captureVariables() {
+      const sent: Record<string, unknown>[] = [];
+      server.use(
+        shop.query(SearchDocument, ({ variables }) => {
+          sent.push(variables);
+          return HttpResponse.json({ data: searchFixture });
+        }),
+      );
+      return sent;
+    }
+
+    it.each([
+      ["relevance", "RELEVANCE", false],
+      ["price-asc", "PRICE", false],
+      ["price-desc", "PRICE", true],
+    ] as const)("sends %s as %s/reverse=%s", async (sort, sortKey, reverse) => {
+      const sent = captureVariables();
+
+      await getSearchResults("jacket", sort);
+
+      expect(sent).toHaveLength(1);
+      expect(sent[0]).toMatchObject({ query: "jacket", sortKey, reverse });
+    });
+
+    it("defaults to relevance when no sort is given", async () => {
+      const sent = captureVariables();
+
+      await getSearchResults("jacket");
+
+      expect(sent[0]).toMatchObject({ sortKey: "RELEVANCE", reverse: false });
+    });
+
+    it("fetches the whole matching set in one page", async () => {
+      const sent = captureVariables();
+
+      await getSearchResults("jacket");
+
+      expect(sent[0]).toMatchObject({ first: 250 });
+    });
+  });
+
+  it("rejects on GraphQL errors instead of returning an empty result", async () => {
+    server.use(
+      shop.query(SearchDocument, () =>
+        HttpResponse.json({ errors: [{ message: "Internal error" }] }),
+      ),
+    );
+
+    await expect(getSearchResults("jacket")).rejects.toThrow("Internal error");
+  });
+
+  it("rejects on network errors", async () => {
+    server.use(shop.query(SearchDocument, () => HttpResponse.error()));
+
+    await expect(getSearchResults("jacket")).rejects.toThrow();
+  });
+});
+
+/**
+ * Required by decision 3 (`docs/predictive-search.md`): `search.edges.node` is a union
+ * (`SearchResultItem` = Article | Page | Product, verified 2026-09-27). The cart's
+ * `BaseCartLine` fragment already taught this project that a missing `possibleTypes` entry
+ * for an abstract type fails **silently** — every field drops to `__typename`-only, no error,
+ * no failing mapper test, because mapper tests never touch the normalized cache. This
+ * document only ever selects through the union with an inline fragment (`... on Product`),
+ * never a named fragment defined directly on `SearchResultItem` itself — reasoning that
+ * `POSSIBLE_TYPES` shouldn't need a new entry for it — but that reasoning is exactly the kind
+ * this project has already been wrong about once, so it is asserted here instead of trusted.
+ */
+describe("Apollo cache configuration (SearchResultItem union)", () => {
+  function roundTrip(cache: InMemoryCache) {
+    cache.writeQuery({
+      query: SearchDocument,
+      variables: { query: "jacket", first: 250, sortKey: "RELEVANCE", reverse: false },
+      data: searchFixture,
+    });
+    return cache.readQuery({
+      query: SearchDocument,
+      variables: { query: "jacket", first: 250, sortKey: "RELEVANCE", reverse: false },
+    });
+  }
+
+  it("round-trips a search result through the real RSC cache config with every field intact", () => {
+    // The same POSSIBLE_TYPES the RSC client actually uses (`rsc-client.ts`) — it has no
+    // `SearchResultItem` entry today, which is the thing being verified, not assumed.
+    const read = roundTrip(new InMemoryCache({ possibleTypes: POSSIBLE_TYPES }));
+    const node = read?.search.edges[0]?.node;
+
+    expect(node).toMatchObject({
+      __typename: "Product",
+      handle: "waterproof-wading-jacket-with-breathable-shell",
+      title: "Waterproof Wading Jacket With Breathable Shell",
+    });
+    // The failure mode this guards against is fields silently dropping to `__typename`-only.
+    expect(Object.keys(node ?? {}).length).toBeGreaterThan(1);
+  });
+
+  it("round-trips even with no possibleTypes configured at all, confirming the union needs none", () => {
+    const read = roundTrip(new InMemoryCache());
+    const node = read?.search.edges[0]?.node;
+
+    expect(Object.keys(node ?? {}).length).toBeGreaterThan(1);
   });
 });
