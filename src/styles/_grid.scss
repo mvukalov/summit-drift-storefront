@@ -1,0 +1,20 @@
+@use "breakpoints" as *;
+
+// The storefront's card grid: 2 columns, 4 from md. Used by Home (collection tiles and
+// featured products), the collection page and search results, and by their loading skeletons,
+// so a placeholder occupies exactly the cells the real cards will.
+//
+// Each page passes `sizes` to next/image to match this layout (GRID_IMAGE_SIZES); change the
+// column counts here and those strings have to follow.
+@mixin card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-3);
+  padding: 0;
+  list-style: none;
+
+  @include bp(md) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-4);
+  }
+}

@@ -1,4 +1,5 @@
 @use "../../styles/breakpoints" as *;
+@use "../../styles/grid" as *;
 
 // Page gutters match the header, footer, Home and the collection page.
 .page {
@@ -43,19 +44,9 @@
   text-align: center;
 }
 
-// 2 columns → 4 from md; keep GRID_IMAGE_SIZES in sync. The same block lives in
-// `app/page.module.scss` and `app/collections/[handle]/page.module.scss`.
+// Shared with the other card grids; keep GRID_IMAGE_SIZES in sync (src/styles/_grid.scss).
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4) var(--space-3);
-  padding: 0;
-  list-style: none;
-
-  @include bp(md) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--space-5) var(--space-4);
-  }
+  @include card-grid;
 }
 
 .pagination {
