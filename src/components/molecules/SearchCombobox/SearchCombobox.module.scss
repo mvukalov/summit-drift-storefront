@@ -1,0 +1,132 @@
+@use "../../../styles/breakpoints" as *;
+
+// Below md: its own full-width row under the logo and icons (the header row wraps; `order`
+// moves it after the icons visually, while tab order stays logo → search → cart → menu).
+// From md: inline, up to 16rem, and the one header item allowed to shrink — the logo and the
+// nav keep their natural width, so the 1280px layout with the nav visible still fits.
+.combobox {
+  position: relative;
+  flex: 1 1 100%;
+  order: 1;
+
+  @include bp(md) {
+    flex: 0 1 16rem;
+    order: 0;
+    min-width: 0;
+  }
+}
+
+.control {
+  position: relative;
+}
+
+.icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-3);
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + var(--space-4));
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:hover {
+    border-color: var(--color-text-muted);
+  }
+
+  // Removes the native "clear" affordance so only the combobox's own chrome shows.
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+// Full width of the search row below md; from md, hangs from the box's right edge and may be
+// wider than the box, as the header mockup shows.
+.panel {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  left: 0;
+  z-index: var(--z-raised);
+  overflow: hidden;
+
+  @include bp(md) {
+    left: auto;
+    width: max-content;
+    min-width: 100%;
+    max-width: min(26rem, 92vw);
+  }
+
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.message {
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+}
+
+.list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-height: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-divider);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover,
+  &.active {
+    background-color: var(--color-surface-muted);
+  }
+}
+
+.thumbnail {
+  flex-shrink: 0;
+  width: 2.75rem;
+}
+
+.optionTitle {
+  flex: 1;
+}
+
+.seeAll {
+  width: 100%;
+  min-height: var(--size-touch-target);
+  padding: var(--space-3);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-primary);
+  cursor: pointer;
+  background-color: var(--color-primary);
+  border: none;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+  }
+}

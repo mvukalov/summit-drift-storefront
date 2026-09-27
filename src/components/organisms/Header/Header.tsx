@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchCombobox } from "@/components/molecules/SearchCombobox/SearchCombobox";
 import type { MenuItem } from "@/types/navigation";
 import { CartTrigger } from "./CartTrigger";
 import { MobileNav } from "./MobileNav";
@@ -9,7 +10,7 @@ export interface HeaderProps {
   items: MenuItem[];
 }
 
-// Server Component: only MobileNav and CartTrigger ship as client JavaScript.
+// Server Component: only SearchCombobox, MobileNav and CartTrigger ship as client JavaScript.
 export function Header({ items }: HeaderProps) {
   return (
     <>
@@ -36,6 +37,8 @@ export function Header({ items }: HeaderProps) {
               </ul>
             </nav>
           )}
+
+          <SearchCombobox />
 
           <div className={styles.actions}>
             <CartTrigger />

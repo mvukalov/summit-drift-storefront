@@ -1,8 +1,11 @@
+import { ApolloClient, ApolloLink, InMemoryCache } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client/react";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { renderWithCart, testCart, testLine } from "@/test/cart";
 import { stubDialog, unstubDialog } from "@/test/dialog";
+import type { Cart } from "@/types/cart";
 import type { MenuItem } from "@/types/navigation";
 import { Header } from "./Header";
 
@@ -10,10 +13,25 @@ import { Header } from "./Header";
 // module is mocked so jsdom never loads the RSC-only Apollo client behind it.
 vi.mock("@/lib/cart/actions", () => import("@/test/cart-actions"));
 
+// The search combobox needs a router and a client-side Apollo client. Its behaviour is
+// covered in SearchCombobox.test.tsx; here it only has to mount, so the client has no
+// network behind it and the combobox never queries (nothing is typed into it).
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 const ITEMS: MenuItem[] = [
   { title: "Summit Protection Shells", href: "/collections/summit-protection-shells" },
   { title: "Trail Foundation Layers", href: "/collections/trail-foundation-layers" },
 ];
+
+function renderHeader(items: MenuItem[] = ITEMS, cart?: Cart) {
+  const client = new ApolloClient({ cache: new InMemoryCache(), link: ApolloLink.empty() });
+  return renderWithCart(
+    <ApolloProvider client={client}>
+      <Header items={items} />
+    </ApolloProvider>,
+    cart,
+  );
+}
 
 // jsdom (v30) has no HTMLDialogElement.showModal()/close(); see src/test/dialog.ts for what
 // the stub covers and doesn't. The browser-native parts (Escape closing the dialog, the inert
@@ -23,7 +41,7 @@ afterAll(unstubDialog);
 
 async function openMenu() {
   const user = userEvent.setup();
-  renderWithCart(<Header items={ITEMS} />);
+  renderHeader();
   const trigger = screen.getByRole("button", { name: "Menu" });
   await user.click(trigger);
   const dialog = screen.getByRole("dialog", { name: "Menu" });
@@ -33,7 +51,7 @@ async function openMenu() {
 describe("Header", () => {
   it("makes the skip link the first focusable element, pointing at the main content", async () => {
     const user = userEvent.setup();
-    renderWithCart(<Header items={ITEMS} />);
+    renderHeader();
 
     await user.tab();
 
@@ -43,7 +61,7 @@ describe("Header", () => {
   });
 
   it("links the logo to the home page", () => {
-    renderWithCart(<Header items={ITEMS} />);
+    renderHeader();
 
     expect(screen.getByRole("link", { name: "Summit Drift Outfitters" })).toHaveAttribute(
       "href",
@@ -52,7 +70,7 @@ describe("Header", () => {
   });
 
   it("renders the primary navigation from the menu items", () => {
-    renderWithCart(<Header items={ITEMS} />);
+    renderHeader();
 
     const nav = screen.getByRole("navigation", { name: "Primary" });
     const links = within(nav).getAllByRole("link");
@@ -63,20 +81,27 @@ describe("Header", () => {
   });
 
   it("omits the navigation when there are no menu items", () => {
-    renderWithCart(<Header items={[]} />);
+    renderHeader([]);
 
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
   it("shows a cart button carrying the item count in its name", () => {
-    renderWithCart(<Header items={ITEMS} />, testCart([testLine({ quantity: 2 })]));
+    renderHeader(ITEMS, testCart([testLine({ quantity: 2 })]));
 
     expect(screen.getByRole("button", { name: "Cart, 2 items" })).toBeInTheDocument();
   });
 
+  it("includes the product search as a search landmark", () => {
+    renderHeader();
+
+    const search = screen.getByRole("search");
+    expect(within(search).getByRole("combobox", { name: "Search products" })).toBeInTheDocument();
+  });
+
   describe("mobile menu", () => {
     it("starts closed", () => {
-      renderWithCart(<Header items={ITEMS} />);
+      renderHeader();
 
       expect(screen.getByRole("button", { name: "Menu" })).toHaveAttribute(
         "aria-expanded",

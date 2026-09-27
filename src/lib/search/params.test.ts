@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSearchParams } from "./params";
+import { parseSearchParams, searchHref } from "./params";
 
 describe("parseSearchParams", () => {
   it("reads q, sort and page from the URL", () => {
@@ -46,5 +46,33 @@ describe("parseSearchParams", () => {
 
   it("accepts a very large page number as-is (paginate() clamps it against the result set)", () => {
     expect(parseSearchParams({ page: "9999" }).page).toBe(9999);
+  });
+});
+
+describe("searchHref", () => {
+  it("leaves the defaults out, so a plain search URL is just the query", () => {
+    expect(searchHref({ q: "jacket", sort: "relevance", page: 1 })).toBe("/search?q=jacket");
+  });
+
+  it("adds a non-default sort and page", () => {
+    expect(searchHref({ q: "jacket", sort: "price-asc", page: 2 })).toBe(
+      "/search?q=jacket&sort=price-asc&page=2",
+    );
+  });
+
+  it("encodes the query text", () => {
+    expect(searchHref({ q: "rain & wind", sort: "relevance", page: 1 })).toBe(
+      "/search?q=rain+%26+wind",
+    );
+  });
+
+  // Whatever the page renders from must be what a link built here leads back to.
+  it.each([
+    { q: "jacket", sort: "relevance", page: 1 },
+    { q: "rain & wind", sort: "price-desc", page: 3 },
+    { q: "Ülle's 100% wool", sort: "price-asc", page: 1 },
+  ] as const)("round-trips through parseSearchParams: %o", (params) => {
+    const query = new URL(searchHref(params), "https://example.test").searchParams;
+    expect(parseSearchParams(Object.fromEntries(query))).toEqual(params);
   });
 });

@@ -31,19 +31,24 @@
   border-bottom: 1px solid var(--color-divider);
 }
 
+// Below md the search box drops to its own full-width row (see SearchCombobox.module.scss);
+// from md everything shares one row and the search box is the item that gives way.
 .inner {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
   padding: var(--space-2) var(--space-3);
 
   @include bp(md) {
+    flex-wrap: nowrap;
     padding-inline: var(--space-4);
   }
 }
 
 .logo {
   display: flex;
+  flex-shrink: 0;
   flex-direction: column;
   justify-content: center;
   min-height: var(--size-touch-target);
@@ -75,6 +80,7 @@
 
   @include bp(lg) {
     display: block;
+    flex-shrink: 0;
   }
 }
 

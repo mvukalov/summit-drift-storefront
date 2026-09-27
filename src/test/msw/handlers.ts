@@ -57,9 +57,7 @@ export const handlers = [
   shop.query(PredictiveSearchDocument, ({ variables }) =>
     HttpResponse.json({
       data:
-        variables.query === MATCHING_QUERY
-          ? predictiveSearchFixture
-          : emptyPredictiveSearchFixture,
+        variables.query === MATCHING_QUERY ? predictiveSearchFixture : emptyPredictiveSearchFixture,
     }),
   ),
 
