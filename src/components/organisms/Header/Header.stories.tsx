@@ -1,7 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect } from "storybook/test";
+import type { Cart } from "@/types/cart";
 import type { MenuItem } from "@/types/navigation";
+import { CartProvider } from "../CartProvider/CartProvider";
 import { Header } from "./Header";
+
+// The header's cart button reads the cart from `CartProvider`, which the root layout supplies
+// in the app. An empty cart is enough here: the badge's states belong to the CartDrawer stories.
+const EMPTY_CART: Cart = {
+  id: "gid://shopify/Cart/c1-story?key=abc",
+  lines: [],
+  subtotal: { amount: "0.00", currencyCode: "USD" },
+  totalQuantity: 0,
+  checkoutUrl: "https://apparel-outdoor.hydrogen.mock.shop/checkout",
+};
 
 // The four collection links as the `main-menu` API returns them (Home filtered out).
 const ITEMS: MenuItem[] = [
@@ -20,11 +32,18 @@ const meta = {
     docs: {
       description: {
         component:
-          "Site header: logo, primary navigation from the `main-menu` API menu, a placeholder cart button and, below 1280px, a menu button that opens a native modal `<dialog>`. Resize the viewport to switch between layouts.",
+          "Site header: logo, primary navigation from the `main-menu` API menu, the cart button and, below 1280px, a menu button that opens a native modal `<dialog>`. Resize the viewport to switch between layouts.",
       },
     },
   },
   args: { items: ITEMS },
+  decorators: [
+    (Story) => (
+      <CartProvider initialCart={EMPTY_CART}>
+        <Story />
+      </CartProvider>
+    ),
+  ],
 } satisfies Meta<typeof Header>;
 
 export default meta;
