@@ -1,18 +1,38 @@
-# Current Feature
+# Current Feature: Performance
 
 ## Status
 
-Not Started
+In Review
 
 ## Goals
 
 <!-- Checkable bullet points of what success looks like -->
 
-- [ ]
+- [x] Profile `/` (Lighthouse trace or Chrome DevTools Performance trace) and identify what fills the 86% render-delay window before picking a fix — don't guess
+- [x] Confirm what Lighthouse currently reports as the LCP element on `/` (hero image was removed in a prior fix; the LCP element may have changed) — it's now the H1 hero heading, not an image
+- [x] Decide Cache Components (`cacheComponents: true`), don't defer a fourth time — verify whether Apollo's RSC integration now documents support (Apollo 4.3.1) and either enable it with `"use cache"` boundaries around the static shell (streaming in cart/predictive-search reads) or document concretely why not — **decided: not enabled**, `docs/performance.md`
+- [x] If enabled, verify the cart's `no-store` per-query override still behaves correctly under the new caching model — N/A, not enabled
+- [x] Identify and reduce client JS actually shipped to `/` using build/bundle-analyzer output, not guesswork — found `zod` (90KB gzip) shipping via `SearchCombobox`, split parsing from URL-building in `src/lib/search/`; Apollo/`ApolloWrapper` cost (~75KB gzip) identified and left as a documented trade-off per architect
+- [x] Add Lighthouse CI (new job or step) against a production build, with a budget from the current measured baseline that fails the PR if exceeded
+- [x] Prove the budget gate actually fails a PR on a deliberate regression before trusting it (fail-first verification, same pattern as prior regression tests)
+- [x] Record before/after measurements for `/` using the project's existing method (Lighthouse mobile, median of 5 runs, same machine), same table format as the README and `docs/cart.md`
+- [x] Record the Cache Components decision in `docs/` as a decision, not a deferral
+- [x] Keep existing unit/component/E2E suites green; no new application-level tests expected beyond the CI budget step and whatever profiling turns up — 805 unit/component tests, 42 E2E tests, all green
 
 ## Notes
 
 <!-- Constraints, decisions, links to specs and research docs -->
+
+- Spec: `context/features/015-performance-spec.md`
+- Starting baseline: `/` scores Performance 93, LCP 3.18–3.31s (depending on cart cookie); 86% of LCP is render delay, not resource load (only 44KB of images involved) — this is a JS/main-thread problem, not an image-optimization one.
+- Converges three prior deferrals: `docs/apollo-nextjs.md` decision 2 ("revisit when we want PPR / static shells"), `docs/cart.md` decision 2 option 2 (explicitly named this feature), and the README's "Cache Components would recover it... deferred to the performance phase" line.
+- Read `docs/apollo-nextjs.md` (decision 2) and `docs/cart.md` (decision 2, option 2) before starting.
+- If Cache Components is enabled: `"use cache"` boundaries must respect the RSC/SSR non-overlap rule (catalog data fetched only in RSC).
+- If Cache Components is **not** enabled: the render-delay fix must come from elsewhere (client bundle reduction, deferred/lazy hydration, etc.) — the profiling step should point at the real cause.
+- No `/research` run for this spec (profiling/measurement task, not an unknown API) — but if profiling turns up a genuine unknown (e.g. undocumented Cache Components + Apollo interaction), flag it for a short `/research` rather than guessing.
+- **Out of scope:** any new product feature or UI; image optimization work (unless profiling finds images are actually a contributor — current measurement says they aren't); search or cart *behavior* changes (only the caching model underneath, if Cache Components is adopted).
+- No visual/interaction changes expected (CLS must stay at 0); if deferring/lazy-loading a component, confirm no visible layout shift or flash.
+- **Verify first:** (1) confirm the current LCP element on `/`; (2) confirm whether Apollo's RSC integration documents Cache Components support now (was undocumented as of 2026-09-22).
 
 ## History
 

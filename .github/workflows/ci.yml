@@ -101,3 +101,32 @@ jobs:
           path: test-results/
           retention-days: 7
           if-no-files-found: ignore
+
+  lighthouse:
+    name: lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # `lighthouserc.js`'s startServerCommand builds and starts the production app itself.
+      - name: Run Lighthouse CI
+        run: npm run lhci
+
+      - name: Upload Lighthouse reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          retention-days: 7
+          if-no-files-found: ignore

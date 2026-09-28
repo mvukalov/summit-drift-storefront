@@ -39,7 +39,7 @@ The checkout button leads to mock.shop's demo checkout page: no payment is taken
 - **URL as state.** Sort, facets and the selected variant live in the URL and are validated on the server.
 - **Cart.** The cart id is a bearer token, so it lives in an httpOnly cookie and only Server Actions talk to the cart API. The UI uses `useOptimistic` over a pure reducer (`src/lib/cart/`), which makes the interesting logic unit-testable and lets rollback happen without extra code.
 - **One choke point for HTML.** Shopify's `descriptionHtml` is only ever rendered through the `RichText` atom, enforced with ESLint rules.
-- **Research before code.** Non-trivial decisions are backed by short research notes in `docs/` (Apollo with Next.js, HTML sanitization, image performance, cart persistence).
+- **Research before code.** Non-trivial decisions are backed by short research notes in `docs/` (Apollo with Next.js, HTML sanitization, image performance, cart persistence, performance profiling).
 
 ## Testing and Quality
 
@@ -93,10 +93,9 @@ No environment variables are required. `NEXT_PUBLIC_SITE_URL` sets canonical URL
 
 ## Planned Improvements
 
-- Search: results page and a predictive combobox
-- End-to-end tests with Playwright and axe accessibility checks in CI
-- Performance work: Lighthouse budgets in CI and Cache Components (see the LCP note below)
 - Storybook deployment
+- Lazy-hydrate the header search combobox on interaction, to remove Apollo Client's ~75 KB
+  gzip from `/`'s initial bundle for visitors who never search (see the LCP note below)
 
 ## Trade-offs recorded so far
 
@@ -140,10 +139,36 @@ Decisions that were reversed or deliberately deferred along the way, kept here s
   static shell; that is deferred to the performance phase. Full write-up and the options
   considered: `docs/cart.md`.
 
-- **LCP is above the 2.5 s target on `/`, and was before the cart.** The baseline measured
-  3.24 s with 86% of it render delay and only 44 KB of images, so this is a
-  JavaScript/render-time problem, not an image or data one. Pre-existing, untouched by the cart,
-  and input for the performance phase.
+- **Cache Components was evaluated and not enabled.** Three prior deferrals (`apollo-nextjs.md`
+  decision 2, `cart.md` decision 2, this file's older LCP note) named it as the eventual fix.
+  Re-checked: Apollo's Next.js integration still documents nothing about `cacheComponents` /
+  `"use cache"` (verified 2026-09-28). More importantly, profiling `/` showed the LCP is
+  main-thread-JS-bound (TTFB is 33 ms), and Cache Components only buys back TTFB — it wouldn't
+  have touched the actual bottleneck. Full reasoning and the profiling trace: `docs/performance.md`.
+- **`zod` was shipping to every page by accident.** `SearchCombobox` (in the global header)
+  imported a URL-builder and a constant from the same modules that held `search`'s zod-based
+  parsing, so the whole library — 90 KB gzip, the single largest resource on `/`, bigger than
+  `react-dom` or Apollo Client — rode along for free. Split parsing from URL-building/constants
+  across `src/lib/search/{parse,params,sort}.ts`; no behavior change. Measured on the same
+  machine and method, Lighthouse mobile, median of 5:
+
+  |             | Before | After |
+  | ----------- | ------ | ----- |
+  | Performance | 88     | 93    |
+  | LCP         | 3.8 s  | 3.2 s |
+  | TBT         | 120 ms | 40 ms |
+  | CLS         | 0      | 0     |
+  | Page weight | 456 KiB | 368 KiB |
+
+  "Before" here is worse than the cart-feature baseline (93 / 3.24 s) because it postdates the
+  search feature (PR #25), which introduced this regression — the fix mostly restores that
+  parity rather than improving on it outright.
+- **LCP is still above the 2.5 s target on `/`.** Current state, same method: Performance 93,
+  LCP 3.2 s (up from 88 / 3.8 s before this feature's fix — see the table above). Now backed by
+  a Lighthouse CI budget (`ci` workflow, `lighthouse` job) instead of only a documented gap, with
+  thresholds set from this feature's measured baseline rather than the aspirational target — see
+  `docs/performance.md` for why. Apollo Client's ~75 KB gzip footprint on every page (loaded for
+  the header search box) is the next lever, tracked under Planned Improvements above.
 
 ## Author
 
