@@ -4,19 +4,15 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Button, buttonClassName } from "@/components/atoms/Button/Button";
 import { Price } from "@/components/atoms/Price/Price";
-import { ProductImage } from "@/components/atoms/ProductImage/ProductImage";
 import { VisuallyHidden } from "@/components/atoms/VisuallyHidden/VisuallyHidden";
+import { CartLineSummary } from "@/components/molecules/CartLineSummary/CartLineSummary";
 import { QuantityStepper } from "@/components/molecules/QuantityStepper/QuantityStepper";
-import { formatOptionValue } from "@/lib/format/options";
 import { MAX_QUANTITY, MIN_QUANTITY } from "@/lib/cart/limits";
 import { isOptimisticLine } from "@/lib/cart/reducer";
 import type { CartLine } from "@/types/cart";
 import { useCart } from "../CartProvider/CartProvider";
 import { CloseIcon } from "../Header/icons";
 import styles from "./CartDrawer.module.scss";
-
-// The thumbnail is a fixed 4rem column, so one descriptor covers every breakpoint.
-const THUMBNAIL_SIZES = "4rem";
 
 /**
  * The cart, as a modal `<dialog>`.
@@ -118,11 +114,18 @@ export function CartDrawer() {
                 <span>Subtotal</span>
                 <Price price={cart.subtotal} />
               </p>
-              {/* Taxes and shipping are not modelled by this API, so no estimate is implied. */}
-              <p className={styles.note}>Taxes and shipping calculated at checkout.</p>
-              <a href={cart.checkoutUrl} className={buttonClassName("primary", styles.checkout)}>
+              {/* Taxes and shipping are not modelled by this API, and the in-app checkout adds
+                  none, so the note says so rather than promising a later calculation. */}
+              <p className={styles.note}>No taxes or shipping — this is a demo checkout.</p>
+              {/* In-app and simulated: `cart.checkoutUrl` is mock.shop's own demo checkout on
+                  another domain, which read as a broken redirect rather than a demo. */}
+              <Link
+                href="/checkout"
+                className={buttonClassName("primary", styles.checkout)}
+                onClick={closeDrawer}
+              >
                 Checkout
-              </a>
+              </Link>
             </div>
           </>
         )}
@@ -146,21 +149,9 @@ function CartDrawerLine({ line, onRemove, removeButtonRef }: CartDrawerLineProps
   const isPendingLine = isOptimisticLine(line.id);
   const isAtMax = line.quantity >= MAX_QUANTITY;
 
-  const description = line.options.map((option) => formatOptionValue(option.value)).join(" / ");
-
   return (
     <li className={styles.line}>
-      <div className={styles.thumbnail}>
-        <ProductImage image={line.image} title={line.title} sizes={THUMBNAIL_SIZES} decorative />
-      </div>
-
-      <div className={styles.details}>
-        <p className={styles.lineTitle}>{line.title}</p>
-        {description && <p className={styles.options}>{description}</p>}
-        <div className={styles.lineTotal}>
-          <Price price={line.lineTotal} />
-        </div>
-      </div>
+      <CartLineSummary line={line} />
 
       <div className={styles.controls}>
         <QuantityStepper

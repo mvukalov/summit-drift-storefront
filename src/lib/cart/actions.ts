@@ -14,7 +14,7 @@ import type { Cart } from "@/types/cart";
 import { readCartId, writeCartId } from "./cookie";
 import { CART_FETCH_CONTEXT, getCartWith } from "./fetchers";
 import { addRefusalMessage, canAddToLine, clampQuantity, MIN_QUANTITY } from "./limits";
-import { toCart } from "./mappers";
+import { emptyCart, toCart } from "./mappers";
 import { GENERIC_ERROR } from "./messages";
 
 /**
@@ -225,6 +225,33 @@ export async function removeCartLine(lineId: string): Promise<CartActionResult> 
       getClient(),
       CartLinesRemoveDocument,
       { cartId, lineIds: [lineId] },
+      (data) => data.cartLinesRemove,
+    ),
+  );
+}
+
+/**
+ * Removes every line in one mutation. The mock checkout's "Place order" is its only caller.
+ *
+ * The line ids come from the server's copy of the cart, not from the caller, for the same
+ * reason the cart id does. The cart itself and its cookie are kept: an emptied cart stays
+ * usable (`docs/cart.md`, fact 14), so the next add goes to the same cart.
+ */
+export async function removeAllCartLines(): Promise<CartActionResult> {
+  const cartId = await readCartId();
+  if (!cartId) return { ok: false, error: GENERIC_ERROR };
+
+  const client = getClient();
+  const current = await getCartWith(client, cartId);
+  // A dead cart holds nothing, which is the state this action exists to reach.
+  if (!current) return { ok: true, cart: emptyCart() };
+  if (current.lines.length === 0) return { ok: true, cart: current };
+
+  return toResult(
+    await runMutation(
+      client,
+      CartLinesRemoveDocument,
+      { cartId, lineIds: current.lines.map((line) => line.id) },
       (data) => data.cartLinesRemove,
     ),
   );

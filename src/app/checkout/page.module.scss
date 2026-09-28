@@ -1,0 +1,11 @@
+@use "../../styles/layout" as *;
+
+.page {
+  @include page-gutters;
+
+  padding-block: var(--space-5) var(--space-6);
+}
+
+.title {
+  margin-bottom: var(--space-4);
+}

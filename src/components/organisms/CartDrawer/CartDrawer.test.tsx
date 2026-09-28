@@ -63,14 +63,17 @@ describe("CartDrawer", () => {
     expect(within(item).getByText("$100.00")).toBeInTheDocument();
   });
 
-  it("shows the subtotal and a checkout link", async () => {
+  it("shows the subtotal and links to the in-app checkout, not the API's checkoutUrl", async () => {
     const { dialog } = await openDrawer();
 
     const subtotalRow = within(dialog).getByText("Subtotal").closest("p");
     expect(subtotalRow).toHaveTextContent("$100.00");
+    expect(
+      within(dialog).getByText("No taxes or shipping — this is a demo checkout."),
+    ).toBeInTheDocument();
     expect(within(dialog).getByRole("link", { name: "Checkout" })).toHaveAttribute(
       "href",
-      CART.checkoutUrl,
+      "/checkout",
     );
   });
 
