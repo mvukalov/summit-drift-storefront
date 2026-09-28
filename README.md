@@ -1,6 +1,7 @@
 # Summit Drift Storefront
 
 [![CI](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/ci.yml)
+[![Storybook](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/storybook.yml/badge.svg?branch=main)](https://github.com/mvukalov/summit-drift-storefront/actions/workflows/storybook.yml)
 
 A headless storefront for Summit Drift Outfitters, a fictional outdoor brand, built with Next.js on the Shopify Storefront GraphQL API ([mock.shop](https://mock.shop)).
 
@@ -30,7 +31,8 @@ The checkout button leads to mock.shop's demo checkout page: no payment is taken
 - Zod for URL and input validation
 - sanitize-html behind a single `RichText` atom
 - Vitest and React Testing Library, MSW for API mocking
-- Storybook for the component library (atoms, molecules, organisms)
+- Storybook for the component library (atoms, molecules, organisms), deployed at
+  https://mvukalov.github.io/summit-drift-storefront/
 - GitHub Actions CI, deployed on Vercel
 
 ## Architecture Notes
@@ -39,7 +41,7 @@ The checkout button leads to mock.shop's demo checkout page: no payment is taken
 - **URL as state.** Sort, facets and the selected variant live in the URL and are validated on the server.
 - **Cart.** The cart id is a bearer token, so it lives in an httpOnly cookie and only Server Actions talk to the cart API. The UI uses `useOptimistic` over a pure reducer (`src/lib/cart/`), which makes the interesting logic unit-testable and lets rollback happen without extra code.
 - **One choke point for HTML.** Shopify's `descriptionHtml` is only ever rendered through the `RichText` atom, enforced with ESLint rules.
-- **Research before code.** Non-trivial decisions are backed by short research notes in `docs/` (Apollo with Next.js, HTML sanitization, image performance, cart persistence, performance profiling).
+- **Research before code.** Non-trivial decisions are backed by short research notes in `docs/` (Apollo with Next.js, HTML sanitization, image performance, cart persistence, performance profiling, Storybook deployment).
 
 ## Testing and Quality
 
@@ -93,7 +95,6 @@ No environment variables are required. `NEXT_PUBLIC_SITE_URL` sets canonical URL
 
 ## Planned Improvements
 
-- Storybook deployment
 - Lazy-hydrate the header search combobox on interaction, to remove Apollo Client's ~75 KB
   gzip from `/`'s initial bundle for visitors who never search (see the LCP note below)
 
@@ -136,8 +137,8 @@ Decisions that were reversed or deliberately deferred along the way, kept here s
   A visitor without a cart pays nothing: the read returns early before any request. A visitor
   holding one pays ~250 ms of server response, which is the whole cost of the decision and lands
   on TTFB rather than rendering. Cache Components would recover it by streaming the cart into a
-  static shell; that is deferred to the performance phase. Full write-up and the options
-  considered: `docs/cart.md`.
+  static shell; evaluated in the performance phase and not enabled (see below). Full write-up and
+  the options considered: `docs/cart.md`.
 
 - **Cache Components was evaluated and not enabled.** Three prior deferrals (`apollo-nextjs.md`
   decision 2, `cart.md` decision 2, this file's older LCP note) named it as the eventual fix.
