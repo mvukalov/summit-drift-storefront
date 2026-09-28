@@ -1,0 +1,17 @@
+@use "breakpoints" as *;
+
+// The storefront's page gutters, shared by the header, footer and every page so their content
+// lines up. The gutter grows past the minimum once the viewport is wider than
+// --size-content-max, which centers the content while the element itself (and any
+// background or border on it) still spans the full width.
+@mixin page-gutters {
+  padding-inline: max(var(--space-3), calc((100% - var(--size-content-max)) / 2));
+
+  @include bp(md) {
+    padding-inline: max(var(--space-4), calc((100% - var(--size-content-max)) / 2));
+  }
+
+  @include bp(lg) {
+    padding-inline: max(var(--space-6), calc((100% - var(--size-content-max)) / 2));
+  }
+}

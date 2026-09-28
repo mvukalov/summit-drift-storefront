@@ -7,7 +7,8 @@
 }
 
 // Quantity and the call to action share a row once there is width for it, as in the PDP
-// reference. The button takes the remaining space so it stays the dominant control.
+// reference. The button takes the remaining space up to a cap, so it stays the dominant
+// control without stretching edge to edge.
 .row {
   display: flex;
   flex-direction: column;
@@ -30,6 +31,7 @@
 
   @include bp(md) {
     flex: 1;
+    max-width: 18rem;
     // Aligns with the stepper's controls rather than its label.
     min-height: var(--size-touch-target);
   }

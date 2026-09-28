@@ -1,17 +1,38 @@
 @use "../../../styles/breakpoints" as *;
+@use "../../../styles/layout" as *;
 
-// Page gutters match the header, footer, Home and the collection page.
 .page {
+  @include page-gutters;
+
+  // The tallest the gallery image may be: what is left of the viewport under the header and
+  // this page's top padding, so the whole picture is visible without scrolling. The header is
+  // taller below md, where search moves to its own row. ProductGallery reads it.
+  --gallery-max-height: calc(100svh - 11rem);
+  --gallery-image-width: calc(var(--gallery-max-height) * var(--ratio-product-image-factor));
+
   display: grid;
   gap: var(--space-5);
   padding-block: var(--space-5) var(--space-6);
-  padding-inline: var(--space-3);
 
   @include bp(md) {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    --gallery-max-height: calc(100svh - 8rem);
+
+    // The gallery column is exactly as wide as the capped image (never past half the row),
+    // and the details column stops at a readable width, so the two sit together instead of
+    // the details starting at the row's midpoint.
+    grid-template-columns: minmax(0, min(50%, var(--gallery-image-width))) minmax(0, 36rem);
     gap: var(--space-6);
     align-items: start;
-    padding-inline: var(--space-4);
+    justify-content: start;
+  }
+
+  // From lg the thumbnails stand beside the image (ProductGallery), so the gallery column
+  // widens by one thumbnail and its gap.
+  @include bp(lg) {
+    grid-template-columns:
+      minmax(0, min(55%, calc(var(--size-thumb) + var(--space-3) + var(--gallery-image-width))))
+      minmax(0, 36rem);
+    column-gap: var(--space-7);
   }
 }
 

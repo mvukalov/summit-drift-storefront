@@ -1,22 +1,18 @@
 @use "../styles/breakpoints" as *;
 @use "../styles/grid" as *;
-
-// Page gutters match the header and footer.
-%gutters {
-  padding-inline: var(--space-3);
-
-  @include bp(md) {
-    padding-inline: var(--space-4);
-  }
-}
+@use "../styles/layout" as *;
 
 .hero {
-  @extend %gutters;
+  @include page-gutters;
 
   padding-block: var(--space-5) var(--space-6);
 
   @include bp(md) {
     padding-block: var(--space-6);
+  }
+
+  @include bp(lg) {
+    padding-block: var(--space-7) var(--space-8);
   }
 }
 
@@ -25,6 +21,11 @@
   flex-direction: column;
   gap: var(--space-3);
   max-width: 40rem;
+
+  // Wide enough for the headline to break over two lines, as in the Home reference.
+  @include bp(lg) {
+    max-width: 52rem;
+  }
 }
 
 .eyebrow {
@@ -36,6 +37,7 @@
 }
 
 .lede {
+  max-width: 42rem;
   font-size: var(--font-size-lg);
   color: var(--color-text-muted);
 }
@@ -48,7 +50,7 @@
 }
 
 .section {
-  @extend %gutters;
+  @include page-gutters;
 
   padding-block: var(--space-6);
   border-top: 1px solid var(--color-divider);

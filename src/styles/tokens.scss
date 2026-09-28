@@ -130,7 +130,9 @@
   // ---------------------------------------------------------------------------
   --size-touch-target: 2.75rem; // 44px: minimum height of interactive controls
   --size-thumb: 4.5rem; // 72px: product gallery thumbnail
+  --size-content-max: 90rem; // 1440px: widest the page content gets; centered beyond it
   --ratio-product-image: 4 / 7; // native 768×1344 catalog images; frames reserve it to avoid CLS
+  --ratio-product-image-factor: calc(4 / 7); // same ratio as a number: width = height × factor
 
   // ---------------------------------------------------------------------------
   // Semantic: focus
