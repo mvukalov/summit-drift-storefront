@@ -30,7 +30,7 @@ In Review
 - If Cache Components is enabled: `"use cache"` boundaries must respect the RSC/SSR non-overlap rule (catalog data fetched only in RSC).
 - If Cache Components is **not** enabled: the render-delay fix must come from elsewhere (client bundle reduction, deferred/lazy hydration, etc.) — the profiling step should point at the real cause.
 - No `/research` run for this spec (profiling/measurement task, not an unknown API) — but if profiling turns up a genuine unknown (e.g. undocumented Cache Components + Apollo interaction), flag it for a short `/research` rather than guessing.
-- **Out of scope:** any new product feature or UI; image optimization work (unless profiling finds images are actually a contributor — current measurement says they aren't); search or cart *behavior* changes (only the caching model underneath, if Cache Components is adopted).
+- **Out of scope:** any new product feature or UI; image optimization work (unless profiling finds images are actually a contributor — current measurement says they aren't); search or cart _behavior_ changes (only the caching model underneath, if Cache Components is adopted).
 - No visual/interaction changes expected (CLS must stay at 0); if deferring/lazy-loading a component, confirm no visible layout shift or flash.
 - **Verify first:** (1) confirm the current LCP element on `/`; (2) confirm whether Apollo's RSC integration documents Cache Components support now (was undocumented as of 2026-09-22).
 

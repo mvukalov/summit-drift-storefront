@@ -21,12 +21,12 @@ method before any change in this feature (Lighthouse 13.5.0, mobile preset, simu
 local `next start`, warm cache, median of 5):
 
 | Metric      | `cart.md` baseline (2026-09-24) | This feature's "before" (2026-09-28) |
-| ----------- | -------------------------------- | -------------------------------------- |
-| Performance | 93                                | 88                                      |
-| LCP         | 3.24 s                            | 3.8 s                                   |
-| TBT         | 37 ms                             | 120 ms                                  |
-| CLS         | 0                                 | 0                                       |
-| Page weight | —                                 | 456 KiB                                 |
+| ----------- | ------------------------------- | ------------------------------------ |
+| Performance | 93                              | 88                                   |
+| LCP         | 3.24 s                          | 3.8 s                                |
+| TBT         | 37 ms                           | 120 ms                               |
+| CLS         | 0                               | 0                                    |
+| Page weight | —                               | 456 KiB                              |
 
 Search added a real regression, not just a bigger app. That regression, not a fresh unexplained
 slowness, turned out to be most of what this feature had to fix.
@@ -56,13 +56,13 @@ from `cart.md`).
 
 `next build`'s chunk output for `/`, cross-referenced against `total-byte-weight`:
 
-| Resource                    | Before (gzip) | Contains                                    |
-| ---------------------------- | -------------: | -------------------------------------------- |
-| `3p1wmlicvzhw2.js`            | **90 KB**      | `zod` (529 references, `ZodError`)            |
-| `1klr-k0mj6-fs.js`            | 72 KB          | `react-dom`, `useOptimistic`, `Suspense`      |
-| `3mg503mcm5au3.js`            | 63 KB          | `ApolloClient`, `InMemoryCache`, `graphql-tag`|
-| `3k_dk5i4kiw_u.js`            | 45 KB          | `useOptimistic` (cart chunk)                  |
-| `33kgp745wn6b1.js`            | 12 KB          | Apollo wrapper + search                       |
+| Resource           | Before (gzip) | Contains                                       |
+| ------------------ | ------------: | ---------------------------------------------- |
+| `3p1wmlicvzhw2.js` |     **90 KB** | `zod` (529 references, `ZodError`)             |
+| `1klr-k0mj6-fs.js` |         72 KB | `react-dom`, `useOptimistic`, `Suspense`       |
+| `3mg503mcm5au3.js` |         63 KB | `ApolloClient`, `InMemoryCache`, `graphql-tag` |
+| `3k_dk5i4kiw_u.js` |         45 KB | `useOptimistic` (cart chunk)                   |
+| `33kgp745wn6b1.js` |         12 KB | Apollo wrapper + search                        |
 
 `zod` — bigger than `react-dom` or Apollo Client core — was the single biggest thing shipped to
 every page. Traced it: `SearchCombobox.tsx` (`'use client'`, mounted in the global `Header`, so
@@ -143,12 +143,12 @@ one, which is a broken gate, not a real one. The gate is instead set from **this
 measured "after" baseline, with headroom for GitHub Actions runner noise** (these are known to be
 slower and more variable than local hardware for Lighthouse's CPU-throttling simulation):
 
-| Assertion                    | Threshold      | Measured "after" median |
-| ----------------------------- | -------------- | ------------------------ |
-| `categories:performance`      | ≥ 0.85          | 0.93                     |
-| `categories:accessibility`    | ≥ 0.95          | (already 0 axe violations, per `e2e/a11y.spec.ts`) |
-| `largest-contentful-paint`    | ≤ 4000 ms       | 3.2 s                    |
-| `cumulative-layout-shift`     | ≤ 0.1           | 0                        |
+| Assertion                  | Threshold | Measured "after" median                            |
+| -------------------------- | --------- | -------------------------------------------------- |
+| `categories:performance`   | ≥ 0.85    | 0.93                                               |
+| `categories:accessibility` | ≥ 0.95    | (already 0 axe violations, per `e2e/a11y.spec.ts`) |
+| `largest-contentful-paint` | ≤ 4000 ms | 3.2 s                                              |
+| `cumulative-layout-shift`  | ≤ 0.1     | 0                                                  |
 
 **Fail-first, verified.** Ran `lhci autorun` locally against the fixed build with
 `categories:performance` temporarily set to `minScore: 0.999` (an impossible bar): the gate
@@ -163,13 +163,13 @@ Lighthouse mobile, simulated throttling, local `next start`, warm cache, median 
 method as every prior measurement in this project.
 
 | Metric      | Before (2026-09-28, post-search regression) | After (this feature's zod-split fix) |
-| ----------- | --------------------------------------------- | --------------------------------------- |
-| Performance | 88                                             | **93**                                  |
-| LCP         | 3.8 s                                          | **3.2 s**                               |
-| FCP         | 0.9 s                                          | 0.9 s                                   |
-| TBT         | 120 ms                                         | **40 ms**                               |
-| CLS         | 0                                              | 0                                       |
-| Page weight | 456 KiB                                        | **368 KiB**                             |
+| ----------- | ------------------------------------------- | ------------------------------------ |
+| Performance | 88                                          | **93**                               |
+| LCP         | 3.8 s                                       | **3.2 s**                            |
+| FCP         | 0.9 s                                       | 0.9 s                                |
+| TBT         | 120 ms                                      | **40 ms**                            |
+| CLS         | 0                                           | 0                                    |
+| Page weight | 456 KiB                                     | **368 KiB**                          |
 
 Reading it honestly: this mostly **restores** the ground search's regression cost, rather than
 improving on the historical (`cart.md`) 93 / 3.24 s baseline outright — the after numbers land

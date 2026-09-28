@@ -152,17 +152,18 @@ Decisions that were reversed or deliberately deferred along the way, kept here s
   across `src/lib/search/{parse,params,sort}.ts`; no behavior change. Measured on the same
   machine and method, Lighthouse mobile, median of 5:
 
-  |             | Before | After |
-  | ----------- | ------ | ----- |
-  | Performance | 88     | 93    |
-  | LCP         | 3.8 s  | 3.2 s |
-  | TBT         | 120 ms | 40 ms |
-  | CLS         | 0      | 0     |
+  |             | Before  | After   |
+  | ----------- | ------- | ------- |
+  | Performance | 88      | 93      |
+  | LCP         | 3.8 s   | 3.2 s   |
+  | TBT         | 120 ms  | 40 ms   |
+  | CLS         | 0       | 0       |
   | Page weight | 456 KiB | 368 KiB |
 
   "Before" here is worse than the cart-feature baseline (93 / 3.24 s) because it postdates the
   search feature (PR #25), which introduced this regression — the fix mostly restores that
   parity rather than improving on it outright.
+
 - **LCP is still above the 2.5 s target on `/`.** Current state, same method: Performance 93,
   LCP 3.2 s (up from 88 / 3.8 s before this feature's fix — see the table above). Now backed by
   a Lighthouse CI budget (`ci` workflow, `lighthouse` job) instead of only a documented gap, with

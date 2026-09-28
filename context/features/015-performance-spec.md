@@ -9,7 +9,7 @@ Bring `/` (and, opportunistically, the other routes) under the project's perform
 - **Profile before optimizing.** Capture a Lighthouse trace (or Chrome DevTools Performance trace) of `/` and identify what's actually filling the 86% render-delay window: main-thread JS execution, hydration cost, a specific component's mount work, or something else. Record the finding — this determines everything below, and guessing wrong wastes the rest of the feature.
 - **Decide Cache Components, don't defer it again.** `cacheComponents: true` was named as the fix for `/` losing static prerendering when the cart cookie read was added (`cart.md` decision 2, option 2) and was deferred each time as "not in scope for the cart feature." This feature is the one that either turns it on — with `"use cache"` boundaries around the static shell and the cart/predictive-search reads streamed in — or documents concretely why not (e.g. if Apollo's RSC integration still doesn't document support for it, per `apollo-nextjs.md`'s original caveat — verify this hasn't changed since Apollo 4.3.1).
 - **Identify and reduce the client JS actually shipped to `/`.** Candidates to check, not assume: `ApolloWrapper` (needed only for the predictive search combobox — confirm it isn't being pulled into the initial `/` bundle unnecessarily), `CartProvider` (wraps the whole app), any client component on the home page that doesn't need to be one. Use `next build`'s bundle output / `next.config.ts` bundle analyzer to find what's actually large, rather than optimizing by guesswork.
-- **Lighthouse CI**: new CI job (or step in the existing `ci` job) running Lighthouse against a production build, with a budget that fails the PR if exceeded. Budget numbers should be set from the *current, measured* baseline plus a realistic target — not an arbitrary round number pulled from nowhere.
+- **Lighthouse CI**: new CI job (or step in the existing `ci` job) running Lighthouse against a production build, with a budget that fails the PR if exceeded. Budget numbers should be set from the _current, measured_ baseline plus a realistic target — not an arbitrary round number pulled from nowhere.
 - **Before/after measurement**, same method as every prior performance note in this project (Lighthouse mobile, median of 5 runs, same machine): record `/` before this feature's changes and after, in the same table format already used in the README's "Trade-offs" section and `docs/cart.md`.
 - Re-verify the LCP element on `/` hasn't changed since the hero image was removed (a prior small fix) — confirm what element Lighthouse currently reports as LCP before optimizing around an assumption.
 
@@ -17,7 +17,7 @@ Bring `/` (and, opportunistically, the other routes) under the project's perform
 
 - `/` (and ideally collection/PDP, though `/` is the only one with a known regression) loads with a materially lower LCP than the 3.18–3.31s baseline, verified by the same measurement method used throughout the project.
 - A pull request that regresses performance below the budget fails CI, the same way a failing test or a11y violation already does.
-- Whatever the Cache Components decision turns out to be, it's a *decision* recorded in `docs/` — not a deferral to yet another future feature. There is no feature after this one to defer it to.
+- Whatever the Cache Components decision turns out to be, it's a _decision_ recorded in `docs/` — not a deferral to yet another future feature. There is no feature after this one to defer it to.
 
 ## Technical
 

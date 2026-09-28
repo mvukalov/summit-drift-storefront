@@ -1,6 +1,11 @@
 import { z } from "zod";
 import type { SearchSearchParams, SearchParams } from "./params";
-import { DEFAULT_SEARCH_SORT, SEARCH_SORT_OPTIONS, SEARCH_SORT_PARAM, type SearchSortOption } from "./sort";
+import {
+  DEFAULT_SEARCH_SORT,
+  SEARCH_SORT_OPTIONS,
+  SEARCH_SORT_PARAM,
+  type SearchSortOption,
+} from "./sort";
 
 // Split out of `./params` and `./sort` (`docs/performance.md`): those two are imported by the
 // client-side `SearchCombobox` for URL building only, so zod stayed out of them to keep it out
