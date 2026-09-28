@@ -60,7 +60,12 @@ describe("design tokens", () => {
   });
 
   // Component-local custom properties (set by the component itself), not design tokens.
-  const LOCAL_PROPERTIES = new Set(["--swatch-color", "--facet-dot-color", "--variant-dot-color"]);
+  const LOCAL_PROPERTIES = new Set([
+    "--swatch-color",
+    "--facet-dot-color",
+    "--variant-dot-color",
+    "--gallery-max-height",
+  ]);
 
   it("defines every token referenced by var() in component styles", () => {
     expect(componentStyles.length).toBeGreaterThan(0);

@@ -1,16 +1,41 @@
+@use "../../../styles/breakpoints" as *;
+
 .gallery {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  align-items: center;
+
+  @include bp(md) {
+    align-items: flex-start;
+  }
+
+  // Thumbnails move to a column left of the image, as in the PDP reference. Only the visual
+  // order changes: the image isn't focusable, so the tab order is the same either way.
+  @include bp(lg) {
+    display: grid;
+    grid-template-areas: "thumbs frame";
+    grid-template-columns: var(--size-thumb) minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+  }
 }
 
-// Reserves the image's space before it loads, so the page never shifts.
+// Reserves the image's space before it loads, so the page never shifts. `--gallery-max-height`
+// comes from the page; without it the frame just fills its container. The width is derived
+// from the height cap rather than capping the height alone: `max-height` on an
+// aspect-ratio box would crop the image instead of shrinking it.
 .frame {
   position: relative;
+  width: min(100%, calc(var(--gallery-max-height, 100svh) * var(--ratio-product-image-factor)));
   aspect-ratio: var(--ratio-product-image);
   overflow: hidden;
   background-color: var(--color-surface-muted);
   border-radius: var(--radius-lg);
+
+  @include bp(lg) {
+    grid-area: frame;
+  }
 }
 
 .empty {
@@ -31,6 +56,12 @@
   margin: 0;
   overflow-x: auto;
   list-style: none;
+
+  @include bp(lg) {
+    flex-direction: column;
+    grid-area: thumbs;
+    overflow-x: visible;
+  }
 }
 
 .thumb {

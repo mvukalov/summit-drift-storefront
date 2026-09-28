@@ -1,4 +1,5 @@
 @use "../../../styles/breakpoints" as *;
+@use "../../../styles/layout" as *;
 
 .footer {
   color: var(--color-text-inverse);
@@ -8,11 +9,12 @@
 .inner {
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-6) var(--space-3);
+  @include page-gutters;
+
+  padding-block: var(--space-6);
 
   @include bp(md) {
     grid-template-columns: 1fr 1fr;
-    padding-inline: var(--space-4);
   }
 }
 

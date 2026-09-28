@@ -1,4 +1,5 @@
 @use "../../../styles/breakpoints" as *;
+@use "../../../styles/layout" as *;
 
 // Off-screen until focused, then shown above the header.
 .skipLink {
@@ -38,11 +39,12 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: center;
-  padding: var(--space-2) var(--space-3);
+  @include page-gutters;
+
+  padding-block: var(--space-2);
 
   @include bp(md) {
     flex-wrap: nowrap;
-    padding-inline: var(--space-4);
   }
 }
 
