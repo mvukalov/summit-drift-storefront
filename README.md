@@ -11,7 +11,7 @@ This project was built for portfolio purposes to practice production-style front
 
 https://summit-drift-storefront.vercel.app/
 
-The checkout button leads to mock.shop's demo checkout page: no payment is taken and nothing ships. The cart itself is real, backed by the Storefront cart API.
+Checkout stays on this site: `/checkout` shows the order summary, and "Place order" confirms the order and empties the cart. It's a simulation: no payment is taken and nothing ships. The cart itself is real, backed by the Storefront cart API.
 
 ## Features
 

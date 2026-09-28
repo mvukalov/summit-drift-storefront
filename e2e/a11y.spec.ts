@@ -85,6 +85,33 @@ test.describe("Accessibility", () => {
         await expect(page.getByRole("dialog", { name: "Your cart" })).toBeVisible();
         await expectNoSeriousViolations(page);
       });
+
+      test("checkout (empty)", async ({ page }) => {
+        await page.goto("/checkout");
+        await expect(page.getByRole("main").getByText("Your cart is empty.")).toBeVisible();
+        await expectNoSeriousViolations(page);
+      });
+
+      test("checkout (summary) and confirmation", async ({ page }) => {
+        await page.goto(PRODUCT_PATH);
+        // Wait for the add to land, so the line on /checkout is a real one, not optimistic.
+        await Promise.all([
+          page.waitForResponse(
+            (response) => response.request().headers()["next-action"] !== undefined,
+          ),
+          page.getByRole("button", { name: "Add to cart" }).click(),
+        ]);
+        await page
+          .getByRole("dialog", { name: "Your cart" })
+          .getByRole("link", { name: "Checkout" })
+          .click();
+        await expect(page.getByRole("region", { name: "Order summary" })).toBeVisible();
+        await expectNoSeriousViolations(page);
+
+        await page.getByRole("button", { name: "Place order" }).click();
+        await expect(page.getByRole("heading", { name: "Order placed" })).toBeVisible();
+        await expectNoSeriousViolations(page);
+      });
     });
   }
 

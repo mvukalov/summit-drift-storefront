@@ -95,35 +95,13 @@
   border-top: 1px solid var(--color-divider);
 }
 
+// The summary (thumbnail + details) is CartLineSummary's; the controls sit below it.
 .line {
-  display: grid;
-  grid-template-columns: 4rem 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-3);
   padding-block: var(--space-4);
   border-bottom: 1px solid var(--color-divider);
-}
-
-.thumbnail {
-  width: 4rem;
-}
-
-.details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.lineTitle {
-  font-weight: var(--font-weight-semibold);
-}
-
-.options {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.lineTotal {
-  margin-top: var(--space-1);
 }
 
 .controls {
@@ -132,7 +110,6 @@
   gap: var(--space-3);
   align-items: center;
   justify-content: space-between;
-  grid-column: 1 / -1;
 }
 
 .remove {

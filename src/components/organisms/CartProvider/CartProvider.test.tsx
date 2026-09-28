@@ -1,8 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useState } from "react";
 import {
   addToCart,
+  removeAllCartLines,
   removeCartLine,
   resetCartActions,
   testCart,
@@ -23,7 +25,8 @@ beforeEach(() => {
 
 /** Surfaces the parts of the context these tests assert on. */
 function Probe() {
-  const { cart, addLine, setLineQuantity, removeLine, isPending, error } = useCart();
+  const { cart, addLine, setLineQuantity, removeLine, clearCart, isPending, error } = useCart();
+  const [clearResult, setClearResult] = useState("");
   const firstLine = cart.lines[0];
 
   return (
@@ -32,6 +35,7 @@ function Probe() {
       <span data-testid="subtotal">{cart.subtotal.amount}</span>
       <span data-testid="pending">{String(isPending)}</span>
       <span data-testid="error">{error ?? ""}</span>
+      <span data-testid="clear-result">{clearResult}</span>
       <button
         type="button"
         onClick={() =>
@@ -55,6 +59,12 @@ function Probe() {
       </button>
       <button type="button" onClick={() => firstLine && removeLine(firstLine.id)}>
         remove
+      </button>
+      <button
+        type="button"
+        onClick={() => void clearCart().then((result) => setClearResult(JSON.stringify(result)))}
+      >
+        clear
       </button>
     </div>
   );
@@ -265,6 +275,71 @@ describe("CartProvider", () => {
         "Something went wrong. Please try again.",
       );
       expect(screen.getByRole("status")).toHaveTextContent("1");
+    });
+  });
+
+  describe("clearCart", () => {
+    it("advances to the emptied cart the action returned and reports success", async () => {
+      removeAllCartLines.mockResolvedValue({ ok: true, cart: testCart() });
+
+      const { user } = renderProbe();
+      await user.click(screen.getByRole("button", { name: "clear" }));
+
+      await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("0"));
+      expect(screen.getByTestId("clear-result")).toHaveTextContent('{"ok":true}');
+    });
+
+    it("keeps the cart and hands the message to the caller when the action fails", async () => {
+      removeAllCartLines.mockResolvedValue({
+        ok: false,
+        error: "Something went wrong. Please try again.",
+      });
+
+      const { user } = renderProbe();
+      await user.click(screen.getByRole("button", { name: "clear" }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId("clear-result")).toHaveTextContent(
+          '{"ok":false,"error":"Something went wrong. Please try again."}',
+        ),
+      );
+      expect(screen.getByRole("status")).toHaveTextContent("1");
+      // The caller owns this message; the drawer's banner stays out of it.
+      expect(screen.getByTestId("error")).toBeEmptyDOMElement();
+    });
+
+    it("reports the generic message when the Server Action call itself rejects", async () => {
+      removeAllCartLines.mockRejectedValue(new Error("network down"));
+
+      const { user } = renderProbe();
+      await user.click(screen.getByRole("button", { name: "clear" }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId("clear-result")).toHaveTextContent(
+          '{"ok":false,"error":"Something went wrong. Please try again."}',
+        ),
+      );
+      expect(screen.getByRole("status")).toHaveTextContent("1");
+    });
+
+    // Same scenario and the same reason for `act` over `waitFor` as the removeLine case above.
+    it("cancels a queued quantity change instead of sending it after the lines are gone", async () => {
+      removeAllCartLines.mockResolvedValue({ ok: true, cart: testCart() });
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+
+      renderProbe();
+      fireEvent.click(screen.getByRole("button", { name: "increment" }));
+      await act(async () => {});
+      fireEvent.click(screen.getByRole("button", { name: "clear" }));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(QUANTITY_SEND_DELAY_MS);
+      });
+
+      expect(updateCartLine).not.toHaveBeenCalled();
+      expect(screen.getByTestId("pending")).toHaveTextContent("false");
+      expect(screen.getByRole("status")).toHaveTextContent("0");
+
+      vi.useRealTimers();
     });
   });
 });

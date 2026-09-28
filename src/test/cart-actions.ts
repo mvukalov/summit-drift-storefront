@@ -21,13 +21,15 @@ export const addToCart =
 export const updateCartLine =
   vi.fn<(lineId: string, quantity: number) => Promise<CartActionResult>>();
 export const removeCartLine = vi.fn<(lineId: string) => Promise<CartActionResult>>();
+export const removeAllCartLines = vi.fn<() => Promise<CartActionResult>>();
 
 /** Clears call history and makes every action succeed with `cart`. */
 export function resetCartActions(cart: Cart): void {
-  for (const action of [addToCart, updateCartLine, removeCartLine]) {
+  for (const action of [addToCart, updateCartLine, removeCartLine, removeAllCartLines]) {
     action.mockReset();
   }
   addToCart.mockResolvedValue({ ok: true, cart });
   updateCartLine.mockResolvedValue({ ok: true, cart });
   removeCartLine.mockResolvedValue({ ok: true, cart });
+  removeAllCartLines.mockResolvedValue({ ok: true, cart });
 }

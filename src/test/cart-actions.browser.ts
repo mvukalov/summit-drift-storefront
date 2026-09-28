@@ -18,3 +18,4 @@ async function unchanged(): Promise<CartActionResult> {
 export const addToCart = unchanged;
 export const updateCartLine = unchanged;
 export const removeCartLine = unchanged;
+export const removeAllCartLines = unchanged;

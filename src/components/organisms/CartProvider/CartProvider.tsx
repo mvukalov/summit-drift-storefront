@@ -16,7 +16,7 @@ import {
   type ModalDialogProps,
   type ModalTriggerProps,
 } from "@/hooks/useModalDialog";
-import { addToCart, removeCartLine, updateCartLine } from "@/lib/cart/actions";
+import { addToCart, removeAllCartLines, removeCartLine, updateCartLine } from "@/lib/cart/actions";
 import { addRefusalMessage, canAddToLine } from "@/lib/cart/limits";
 import { GENERIC_ERROR } from "@/lib/cart/messages";
 import { cartReducer, type NewCartLine } from "@/lib/cart/reducer";
@@ -43,6 +43,11 @@ export interface CartContextValue {
   addLine: (line: NewCartLine) => Promise<AddLineResult>;
   setLineQuantity: (lineId: string, quantity: number) => void;
   removeLine: (lineId: string) => void;
+  /**
+   * Empties the cart and resolves once the server has. Not optimistic: its only caller (the
+   * mock checkout) shows its own confirmation first and rolls that back on failure.
+   */
+  clearCart: () => Promise<AddLineResult>;
   openDrawer: () => void;
   /** For the header button that opens the drawer. */
   triggerProps: ModalTriggerProps;
@@ -265,6 +270,28 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
     [applyOptimistic],
   );
 
+  const clearCart = useCallback(async (): Promise<AddLineResult> => {
+    setError(null);
+    // Every queued quantity change is moot once the lines are gone, and would fail against a
+    // removed line id if it fired. Cancelled, not just cleared, for the reason `removeLine`
+    // gives: whatever is awaiting `settled` must be released.
+    for (const pending of pendingSends.current.values()) {
+      clearTimeout(pending.timer);
+      pending.cancel();
+    }
+    pendingSends.current.clear();
+
+    try {
+      const result = await removeAllCartLines();
+      if (!result.ok) return { ok: false, error: result.error };
+      startTransition(() => setServerCart(result.cart));
+      return { ok: true };
+    } catch (error) {
+      logDevError("Clearing the cart failed.", error);
+      return { ok: false, error: GENERIC_ERROR };
+    }
+  }, []);
+
   const openDrawer = triggerProps.onClick;
 
   const value = useMemo<CartContextValue>(
@@ -276,6 +303,7 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
       addLine,
       setLineQuantity,
       removeLine,
+      clearCart,
       openDrawer,
       triggerProps,
       dialogProps,
@@ -291,6 +319,7 @@ export function CartProvider({ initialCart, children }: CartProviderProps) {
       addLine,
       setLineQuantity,
       removeLine,
+      clearCart,
       openDrawer,
       triggerProps,
       dialogProps,

@@ -26,7 +26,7 @@ vi.mock("next/headers", () => ({
     }),
 }));
 
-const { addToCart, removeCartLine, updateCartLine } = await import("./actions");
+const { addToCart, removeAllCartLines, removeCartLine, updateCartLine } = await import("./actions");
 
 const FIXTURE_CART = cartByIdFixture.cart;
 /** The variant on the fixture's newest line, which already holds 3. */
@@ -369,6 +369,91 @@ describe("removeCartLine", () => {
     const removes = spyOn("CartLinesRemove");
 
     expect(await removeCartLine(LINE_ID)).toMatchObject({ ok: false });
+    expect(removes).toHaveLength(0);
+  });
+});
+
+describe("removeAllCartLines", () => {
+  it("removes every line of the server's cart in one mutation", async () => {
+    cookieJar.set("cart_id", EXISTING_CART_ID);
+    const removes = spyOn("CartLinesRemove");
+
+    const result = await removeAllCartLines();
+
+    expect(result).toMatchObject({ ok: true });
+    expect(removes).toEqual([
+      {
+        cartId: EXISTING_CART_ID,
+        lineIds: FIXTURE_CART.lines.nodes.map((line) => line.id),
+      },
+    ]);
+    // The cart is emptied, not replaced: the cookie still points at the same cart.
+    expect(cookieJar.get("cart_id")).toBe(EXISTING_CART_ID);
+  });
+
+  it("succeeds without a mutation when the cart is already empty", async () => {
+    cookieJar.set("cart_id", EXISTING_CART_ID);
+    server.use(
+      shop.query(CartByIdDocument, () =>
+        HttpResponse.json({
+          data: {
+            cart: {
+              ...FIXTURE_CART,
+              totalQuantity: 0,
+              lines: { ...FIXTURE_CART.lines, nodes: [] },
+            },
+          },
+        }),
+      ),
+    );
+    const removes = spyOn("CartLinesRemove");
+
+    const result = await removeAllCartLines();
+
+    expect(result).toMatchObject({ ok: true, cart: { lines: [] } });
+    expect(removes).toHaveLength(0);
+  });
+
+  it("treats a dead cart as already empty", async () => {
+    cookieJar.set("cart_id", "gid://shopify/Cart/gone");
+    server.use(shop.query(CartByIdDocument, () => HttpResponse.json({ data: { cart: null } })));
+    const removes = spyOn("CartLinesRemove");
+
+    const result = await removeAllCartLines();
+
+    expect(result).toMatchObject({ ok: true, cart: { lines: [], totalQuantity: 0 } });
+    expect(removes).toHaveLength(0);
+  });
+
+  it("maps userErrors to the generic message", async () => {
+    cookieJar.set("cart_id", EXISTING_CART_ID);
+    server.use(
+      shop.mutation(CartLinesRemoveDocument, () =>
+        HttpResponse.json({
+          data: {
+            cartLinesRemove: cartPayload("CartLinesRemovePayload", [
+              {
+                code: "INVALID",
+                field: ["lineIds", "0"],
+                message: "The cart line does not exist.",
+                __typename: "CartUserError",
+              },
+            ]),
+          },
+        }),
+      ),
+    );
+
+    expect(await removeAllCartLines()).toEqual({
+      ok: false,
+      error: "Something went wrong. Please try again.",
+    });
+  });
+
+  it("fails without touching the API when there is no cart cookie", async () => {
+    const removes = spyOn("CartLinesRemove");
+
+    expect(await removeAllCartLines()).toMatchObject({ ok: false });
     expect(removes).toHaveLength(0);
   });
 });
