@@ -3,7 +3,7 @@ import { VisuallyHidden } from "@/components/atoms/VisuallyHidden/VisuallyHidden
 import { ProductCard } from "@/components/molecules/ProductCard/ProductCard";
 import { getSearchResults } from "@/lib/catalog/fetchers";
 import { paginate } from "@/lib/search/paginate";
-import { parseSearchParams } from "@/lib/search/params";
+import { parseSearchParams } from "@/lib/search/parse";
 import { SearchPagination } from "./SearchPagination";
 import { SearchSortControl } from "./SearchSortControl";
 import styles from "./page.module.scss";

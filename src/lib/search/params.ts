@@ -1,10 +1,8 @@
-import { z } from "zod";
-import {
-  DEFAULT_SEARCH_SORT,
-  SEARCH_SORT_PARAM,
-  parseSearchSortParam,
-  type SearchSortOption,
-} from "./sort";
+import { DEFAULT_SEARCH_SORT, SEARCH_SORT_PARAM, type SearchSortOption } from "./sort";
+
+// Kept zod-free on purpose (`docs/performance.md`): this module is imported by the client-side
+// `SearchCombobox`, so a zod schema here would ship the whole library to every page. Parsing
+// (`parseSearchParams`) lives in `./parse` instead; this file only builds URLs.
 
 export const SEARCH_PATH = "/search";
 
@@ -15,33 +13,6 @@ export interface SearchParams {
   q: string;
   sort: SearchSortOption;
   page: number;
-}
-
-// Defensive, not a verified API limit (risk 7, `docs/predictive-search.md`): the API itself
-// was not observed to reject long queries.
-const MAX_QUERY_LENGTH = 200;
-
-const qSchema = z.string().trim().max(MAX_QUERY_LENGTH).catch("");
-
-// `page` is display-only pagination over an already-fetched array (`paginate.ts`), not a
-// GraphQL cursor, so any non-positive-integer input just falls back to the first page.
-const pageSchema = z.coerce.number().int().min(1).catch(1);
-
-function readParam(params: SearchSearchParams, key: string): string | undefined {
-  const value = params[key];
-  return Array.isArray(value) ? value.at(-1) : value;
-}
-
-/**
- * Reads `q`/`sort`/`page` from the URL. Mirrors `parseSortParam`/`parseFacetsParam`: never
- * throws, so a hand-edited or stale URL still renders a page instead of erroring.
- */
-export function parseSearchParams(params: SearchSearchParams): SearchParams {
-  return {
-    q: qSchema.parse(readParam(params, "q") ?? ""),
-    sort: parseSearchSortParam(params[SEARCH_SORT_PARAM]),
-    page: pageSchema.parse(readParam(params, "page")),
-  };
 }
 
 /**

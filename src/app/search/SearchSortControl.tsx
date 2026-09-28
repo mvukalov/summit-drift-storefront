@@ -3,11 +3,8 @@
 import { useRouter } from "next/navigation";
 import { Select } from "@/components/atoms/Select/Select";
 import { searchHref } from "@/lib/search/params";
-import {
-  SEARCH_SORT_OPTIONS,
-  parseSearchSortParam,
-  type SearchSortOption,
-} from "@/lib/search/sort";
+import { parseSearchSortParam } from "@/lib/search/parse";
+import { SEARCH_SORT_OPTIONS, type SearchSortOption } from "@/lib/search/sort";
 
 export interface SearchSortControlProps {
   /** The query the results are for, carried into the new URL. */
