@@ -5,7 +5,7 @@ const config: StorybookConfig = {
   framework: "@storybook/nextjs-vite",
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(ts|tsx)"],
   addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
-  viteFinal(config) {
+  viteFinal(config, { configType }) {
     config.resolve ??= {};
     config.resolve.alias = {
       ...config.resolve.alias,
@@ -16,6 +16,12 @@ const config: StorybookConfig = {
         new URL("../src/test/cart-actions.browser.ts", import.meta.url),
       ),
     };
+    // Only the deployed build lives under a GitHub Pages project subpath; `storybook dev`
+    // always serves from the local root, so this must not apply there (see
+    // docs/storybook-deploy.md).
+    if (configType === "PRODUCTION" && process.env.STORYBOOK_BASE_PATH) {
+      config.base = process.env.STORYBOOK_BASE_PATH;
+    }
     return config;
   },
 };
