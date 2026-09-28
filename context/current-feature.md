@@ -1,18 +1,56 @@
-# Current Feature
+# Current Feature: E2E & Accessibility
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Checkable bullet points of what success looks like -->
 
-- [ ]
+- [x] Ask before installing `@playwright/test` and `@axe-core/playwright` as dev dependencies
+- [ ] Verify first: Playwright's bundled browsers install/run cleanly in the GitHub Actions runner — confirmed locally (macOS); still needs the first real CI run on `ubuntu-latest`
+- [x] Verify first: CI runner's network egress reaches `apparel-outdoor.mock.shop` — the whole suite runs against the live API locally; CI reaches the same public endpoint every other job already calls
+- [x] `playwright.config.ts`: `webServer` runs `npm run build && npm run start` (production build, not `next dev`) on an ephemeral port; retries + trace-on-failure for CI; viewports at minimum 375px and 1280px
+- [x] `npm run test:e2e` (headless/CI) and `npm run test:e2e:ui` (local UI mode) scripts
+- [x] New CI job in `.github/workflows/ci.yml`: build once, run Playwright suite, upload HTML report + trace/video artifacts on failure; fails the build on suite failure or any serious/critical axe violation
+- [x] `e2e/` one file per flow: `home.spec.ts`, `collection-and-facets.spec.ts`, `product-page.spec.ts`, `cart.spec.ts`, `search.spec.ts`, `a11y.spec.ts`
+- [x] Home → collection → facets flow: apply facet + sort, URL reflects both, grid updates; reload renders same state from URL alone
+- [x] Product page flow: switch variant (color/size) updates price/gallery/URL together; direct link with variant pre-selected lands correctly
+- [x] Cart flow: add → update → remove in one session; reload survives (httpOnly cookie); add same variant twice merges into one line; header count correct in **raw server-rendered HTML** (pre-hydration)
+- [x] Search flow: type → suggestions → arrow → Enter → product page; no-match term → no-results state; type → Enter directly → results page with count/sort; sort/page changes update URL + grid together
+- [x] `a11y.spec.ts`: axe against every route, empty/default and populated/interactive states (drawer open, combobox open, facets applied) — zero serious/critical violations
+- [x] Cross off completed E2E/axe items in `context/new-feature-list.md` ("Carried over for `e2e-and-a11y`" section) as each is implemented
 
 ## Notes
 
 <!-- Constraints, decisions, links to specs and research docs -->
+
+- Spec: `context/features/014-e2e-and-a11y-spec.md`
+- No behavior changes — this feature only proves existing scenarios in a real browser against the real mock.shop API (not MSW).
+- Page-object-lite helpers only where real duplication appears (3+ times), not preemptively.
+- Each test creates its own cart/state; catalog data (30 products) is stable but cart mutations are per-run state.
+- Out of scope: Lighthouse CI/performance budgets/Cache Components (→ `performance` feature), visual regression testing, new product features/UI, Storybook a11y addon replacement.
+- No `/research` run — Playwright/axe are well-established; treat Next 16/React 19 compatibility surprises as "Verify first" items, not a blocker.
+
+**Learned in use** (verified against the real browser, not assumed):
+
+- `showModal()`'s default focus target (no `autofocus` anywhere in the dialog) is the first
+  focusable node in tree order, including a `tabIndex={-1}` element — the drawer's `<h2>` title,
+  ahead of the Close button. Confirmed with a throwaway script against the real build; jsdom
+  could never have caught this.
+- `page.request` (Playwright's API-testing context) shares the browser context's cookie jar in
+  general, but a request to `http://127.0.0.1` does not resend a `Secure` cookie the way a real
+  page navigation does (Chromium's "localhost is a secure context" exception doesn't extend to
+  it) — worked around by reading the cookie via `context.cookies()` and attaching it explicitly
+  for the one test that fetches raw SSR HTML directly.
+- `.check()`/`.fill()` on a control that triggers `router.push` and a full re-render (variant
+  picker, facet checkboxes) intermittently fails Playwright's own post-action state check
+  against the now-replaced DOM node; `.click()` avoids it.
+- Next's own framework chrome collides with naive role/attribute queries: a `role="alert"`
+  route announcer (`__next-route-announcer__`) and an empty `role="status" aria-live="polite"`
+  region exist on every page, so `getByRole("alert")` and `[aria-live="polite"]` need scoping
+  (by visible text or by tag) wherever the app also uses those roles.
 
 ## History
 

@@ -47,7 +47,7 @@ Not applicable — no new UI. Axe assertions cover the accessibility bar already
 
 ## Testing
 
-- This feature *is* the testing layer, so there is no separate "what must be covered" beyond the flows and axe checks already listed in Requirements/Expected Behavior.
+- This feature _is_ the testing layer, so there is no separate "what must be covered" beyond the flows and axe checks already listed in Requirements/Expected Behavior.
 - CI must fail the build if the Playwright suite fails or if any axe assertion finds a serious/critical violation.
 - Flakiness watch: the live API's data (cart state, mutations) is shared across whatever runs against it, so tests should create their own cart/state within each test rather than depend on catalog data staying in a particular shape between runs (the catalog itself is stable — 30 products, verified repeatedly — only cart mutations are per-run state).
 
