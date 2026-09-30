@@ -34,4 +34,19 @@ describe("Footer", () => {
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
     expect(screen.getByRole("contentinfo")).toHaveTextContent("Summit Drift");
   });
+
+  it.each([
+    ["with menu items", ITEMS],
+    ["without menu items", []],
+  ])("credits the author and links the source %s", (_, items) => {
+    render(<Footer items={items} />);
+
+    const footer = screen.getByRole("contentinfo");
+    expect(footer).toHaveTextContent("Portfolio project by Martin Vukalović");
+    expect(footer).toHaveTextContent("Summit Drift is a fictional brand.");
+    expect(screen.getByRole("link", { name: "Source on GitHub" })).toHaveAttribute(
+      "href",
+      "https://github.com/mvukalov/summit-drift-storefront",
+    );
+  });
 });
