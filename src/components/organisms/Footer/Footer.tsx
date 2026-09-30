@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { MenuItem } from "@/types/navigation";
 import styles from "./Footer.module.scss";
 
+const SOURCE_URL = "https://github.com/mvukalov/summit-drift-storefront";
+
 export interface FooterProps {
   /** Collection links, from the same `main-menu` data as the header. */
   items: MenuItem[];
@@ -34,6 +36,19 @@ export function Footer({ items }: FooterProps) {
             </ul>
           </nav>
         )}
+      </div>
+
+      <div className={styles.credit}>
+        <p className={styles.byline}>
+          <span>Portfolio project by Martin Vukalović</span>
+          <a href={SOURCE_URL} className={styles.link}>
+            Source on GitHub
+          </a>
+        </p>
+        <p>
+          Summit Drift is a fictional brand. Product data and images come from mock.shop. No real
+          orders are placed.
+        </p>
       </div>
     </footer>
   );
